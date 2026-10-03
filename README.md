@@ -4,9 +4,25 @@
 
 在本机运行的微信公众号排版工作台。三步出稿：**文章 → 选一套风格 → 手机预览并复制到公众号**。
 
-- 8 套风格，每套把正文配图画风、900×383 横幅封面、公众号排版主题和配色绑在一起（配置在 `data/style-library/<风格>/style-config.json`）。
+- 9 套风格，每套把正文配图画风、900×383 横幅封面、公众号排版主题和配色绑在一起（配置在 `data/style-library/<风格>/style-config.json`）。
 - 排版引擎（`dist/wx-layouts.js`）会把文章渲染成带内联样式的 HTML。“复制到公众号”把它作为富文本放进剪贴板，可以直接粘贴到公众号后台。
 - 写作与生图不在网页里调用任何付费 API。网页按钮只复制指令，交给本机 Codex 对话（`skills/` 下的三个 Skill）完成，再由 `scripts/sync-workbench.py` 同步回工作台。
+
+## 风格
+
+| 风格 | 公众号排版 | 目录 |
+|---|---|---|
+| 复古纸艺拼贴 | 复古报刊 | `vintage-paper` |
+| 黑金属荧光科技 | 金属报告 | `neon-metal` |
+| 复古波普漫画 | 波普漫画格 | `retro-pop-comic` |
+| 动感叙事漫画 | 动感杂志 | `dynamic-narrative-comic` |
+| 暖色手绘信息图 | 暖色手账 | `warm-handdrawn-info` |
+| 霓虹科幻卡通 | 霓虹卡片 | `neon-scifi-cartoon` |
+| 荧光科技人像 | 荧光大字 | `neon-portrait` |
+| 波普拼贴人像 | 波普拼贴 | `pop-portrait` |
+| 粗线手绘图解 | 粗线手绘 | `rough-sketch-diagram` |
+
+粗线手绘图解：奶油底、粗黑手绘线、粉彩圆角卡（天蓝/薄荷/淡紫/蜜桃/奶黄），正文图 16:9；每张图右下角带手写「@怂怂的AI脑内小剧场」。
 
 ## 启动
 
@@ -35,7 +51,7 @@ python3 scripts/sync-workbench.py cover 封面.png                       # 2.35:
 |---|---|
 | `server.js` | 本机服务：`/api/document`、`/api/covers`、`/api/styles`、`/api/library` |
 | `dist/` | 页面（`index.html`、`app.js`）、Markdown 渲染 `md.js`、排版引擎 `wx-layouts.js` |
-| `data/style-library/` | 8 套风格的 Prompt 与样图（作者照片目录 `_owner/` 不入库） |
+| `data/style-library/` | 9 套风格的 Prompt 与样图（作者照片目录 `_owner/` 不入库） |
 | `skills/` | Codex Skill：写作、配图与同步、封面 |
 | `scripts/` | 同步脚本、人像参考导出 |
 

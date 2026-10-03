@@ -1,6 +1,6 @@
 // 作者：史鸿洁 · © 2026 史鸿洁 · 采用 CC BY-NC 4.0 许可（署名 · 非商业性使用），详见 LICENSE
 /* 公众号工作台 · 简化版（2026-10-03）
-   流程：① 文章 → ② 选风格（8 套之一：正文图 + 横幅封面 + 排版 + 配色一起定）→ ③ 成品（手机预览、复制到公众号）。
+   流程：① 文章 → ② 选风格（9 套之一：正文图 + 横幅封面 + 排版 + 配色一起定）→ ③ 成品（手机预览、复制到公众号）。
    排版引擎 wx-layouts.js 与 Markdown 渲染 md.js 和 /workspace/wechat-layouts/src 下的同名文件逐字相同。 */
 const $=id=>document.getElementById(id);
 let PROJECT='~/Desktop/公众号工作台'; // 启动时从 /api/status 读取实际路径
@@ -106,7 +106,7 @@ function renderStyleCards(){
  const box=$('styleCards');if(!box.children.length){for(const s of STYLES){const b=document.createElement('button');b.className='styleCard';b.dataset.imageStyleChoice=s.name;b.innerHTML=`<span class="styleThumbs"><img class="body" alt="" loading="lazy" src="${s.bodySampleUrl}"><img alt="" loading="lazy" src="${s.coverSampleUrl}"></span><strong>${esc(s.name)}</strong><small>排版：${esc(layoutLabel(s.name))}</small>`;b.onclick=()=>{applyStyle(s.name);paint();renderStyleCards();toast(`已选「${s.name}」：封面、排版「${layoutLabel(s.name)}」和配色一起换好了`)};box.append(b)}}
  box.querySelectorAll('[data-image-style-choice]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.imageStyleChoice===state.imageStyle?'true':'false'));
  const s=styleOf(state.imageStyle);const P=s?wxPalette(state):null;
- $('styleSummary').innerHTML=s?`<strong>${esc(s.name)}</strong><br>正文图：${esc(s.name)}风格，横向 3:2<br>封面：900×383 横幅，${esc(s.bannerShort||'标题和画面一体')}<br>排版：${esc(layoutLabel(s.name))} · 配色<span class="swatches">${[P.accent,P.highlight,P.paper,P.ink].filter(Boolean).map(c=>`<i style="background:${c}"></i>`).join('')}</span>`:'还没选风格。选好后，正文图、横幅封面、排版和配色会一起定下来。';
+ $('styleSummary').innerHTML=s?`<strong>${esc(s.name)}</strong><br>正文图：${esc(s.name)}风格，横向 ${esc(s.bodyRatio||'3:2')}<br>封面：900×383 横幅，${esc(s.bannerShort||'标题和画面一体')}<br>排版：${esc(layoutLabel(s.name))} · 配色<span class="swatches">${[P.accent,P.highlight,P.paper,P.ink].filter(Boolean).map(c=>`<i style="background:${c}"></i>`).join('')}</span>`:'还没选风格。选好后，正文图、横幅封面、排版和配色会一起定下来。';
  renderStyleOptions();
 }
 function renderStyleOptions(){

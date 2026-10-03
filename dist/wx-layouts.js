@@ -38,7 +38,7 @@ var wxLayouts={
 };
 var wxLayoutOrder=['wxMagazine','wxHeadline','wxCards','wxBigType','wxDataReport','wxJournal'];
 /* variants of the two shared layouts (selected through palette.variant) */
-var wxLayoutVariants={comic:{layout:'wxCards',name:'波普漫画格',hint:'奶油底 · 粗黑描边 · 硬投影 · 第N格'},pop:{layout:'wxJournal',name:'波普拼贴',hint:'格子纸 · 白边贴纸 · 钴蓝明黄'}};
+var wxLayoutVariants={comic:{layout:'wxCards',name:'波普漫画格',hint:'奶油底 · 粗黑描边 · 硬投影 · 第N格'},pop:{layout:'wxJournal',name:'波普拼贴',hint:'格子纸 · 白边贴纸 · 钴蓝明黄'},sketch:{layout:'wxCards',name:'粗线手绘',hint:'奶油底 · 粗黑线 · 粉彩圆角卡'}};
 
 /* image style (配图风格) -> cover style + layout + palette sampled from its sample images */
 var wxImageStyleBindings={
@@ -50,6 +50,7 @@ var wxImageStyleBindings={
  '暖色手绘信息图':{cover:'warmHanddrawnInfo',layout:'wxJournal',palette:{accent:'#E07B4F',highlight:'#FCD9BC',paper:'#FFF7EE',mint:'#6DBE9C'}},
  '荧光科技人像':{cover:'neonPortrait',layout:'wxBigType',palette:{accent:'#5E9E00',highlight:'#9BE22A',ink:'#111311'}},
  '波普拼贴人像':{cover:'popPortrait',layout:'wxJournal',palette:{variant:'pop',accent:'#2F5BD3',highlight:'#FFE27A',ink:'#222222',muted:'#7C7A70',paper:'#FFFCF4',soft:'#FFF4C9',note:'#FFF2B8',note2:'#E2EAFF',line:'#E4E0CF',mint:'#FF7A9C',tape:'#9DB4F2',card:'#FFFFFF',grid:'#E8ECF8'}}
+ ,'粗线手绘图解':{cover:'roughSketchDiagram',layout:'wxCards',palette:{variant:'sketch',accent:'#2F7FC1',highlight:'#FEE69C',ink:'#1A1A1A',muted:'#6B6458',paper:'#FFFAEE',soft:'#FFF3CC',card:'#FFFFFF',line:'#E8DDC6',chipText:'#1A1A1A',sky:'#BDE7FF',mint:'#CDFCE8',lav:'#E9CEFB',peach:'#FFD6B8',butter:'#FEE69C'}}
  ,'自动匹配文章':{cover:'auto',layout:null,palette:null} /* automatic: cover follows, layout stays as is */
 };
 
@@ -142,6 +143,11 @@ function wxEm(theme,P){
   hl:{backgroundImage:wxHL(wxMix(P.accent,P.paper,0.8),58),padding:'0 1px'},
   circle:{display:'inline-block',lineHeight:'1.45',whiteSpace:'nowrap',textIndent:'0',border:'1.5px solid '+P.accent,borderRadius:'48% 52% 45% 55% / 58% 45% 55% 42%',padding:'1px 6px',margin:'0 1px'},
   wave:{textDecoration:'underline wavy '+P.accent,textUnderlineOffset:'5px'}};
+ if(theme==='wxCards'&&V==='sketch')return{
+  strong:{color:P.ink,fontWeight:'900',backgroundImage:wxHL(P.butter||P.highlight,56),padding:'0 2px'},
+  hl:{backgroundImage:wxHL(P.mint||P.highlight,50),padding:'0 2px'},
+  circle:{display:'inline-block',lineHeight:'1.45',whiteSpace:'nowrap',textIndent:'0',border:'2.5px solid '+P.ink,borderRadius:'52% 48% 55% 45% / 60% 50% 50% 40%',padding:'1px 7px',margin:'0 1px'},
+  wave:{textDecoration:'underline wavy '+P.accent,textUnderlineOffset:'4px'}};
  if(theme==='wxCards'&&V==='comic')return{
   strong:{color:P.ink,fontWeight:'900',backgroundColor:P.highlight,padding:'0 3px',boxShadow:'2px 2px 0 '+P.ink},
   hl:{backgroundImage:wxHL(wxMix(P.accent,'#ffffff',0.62),50),padding:'0 1px'},
@@ -236,7 +242,35 @@ function wxBuild(theme,P,cfg,blocks){
  }}
 
  /* ===== 3 霓虹卡片 ← 霓虹科幻卡通（comic 变体 ← 复古波普漫画） ===== */
- if(theme==='wxCards'){var CM=V==='comic',BL=P.accent,YE=P.highlight,INKc=P.ink;
+
+ /* ===== 3b 粗线手绘 ← 粗线手绘图解：奶油底、粗黑手绘线、粉彩圆角卡（天蓝/薄荷/淡紫/蜜桃/奶黄），无硬投影 ===== */
+ if(theme==='wxCards'&&V==='sketch'){var KS=P.ink,BU=P.butter||P.highlight;
+  var pastel=[P.sky||'#BDE7FF',P.mint||'#CDFCE8',P.lav||'#E9CEFB',P.peach||'#FFD6B8',BU];
+  var wob='20px 24px 18px 26px / 24px 18px 26px 20px';
+  var cardTint=pastel.map(function(c){return wxMix(c,'#ffffff',0.42)});
+  var skCard=function(n){return wxS({margin:'0 0 18px',padding:'18px 16px 6px',backgroundColor:cardTint[n%5],border:'2.5px solid '+KS,borderRadius:wob})};
+  var chip=function(t,bg,ex){return wxTag('span',wxS(wxX({display:'inline-block',fontSize:'12px',lineHeight:1.6,fontWeight:'900',letterSpacing:'1px',color:KS,backgroundColor:bg,padding:'2px 11px',borderRadius:'999px',border:'2px solid '+KS},ex)),t)};
+  var skKicker=(cfg.layoutKicker||'').trim();
+  L={
+  root:{padding:'16px 12px 8px',backgroundColor:P.paper},p:{textAlign:'left'},
+  wrap:true,card:skCard,
+  masthead:function(){return wxTag('p',wxS({margin:'0 0 14px',fontSize:'12px',lineHeight:1.6,fontWeight:'900',letterSpacing:'2px',color:KS}),chip('✎ 图解',BU,{marginRight:'8px'})+(skKicker?skKicker+' · ':'')+wxTag('span',wxS({color:P.muted,fontWeight:'700'}),'共 '+total+' 步'))},
+  title:function(h){return wxTag('h1',wxS({margin:'0 2px 20px',padding:'0',fontSize:'25px',lineHeight:1.42,fontWeight:'900',color:KS,letterSpacing:'0.5px'}),wxTag('span',wxS({backgroundImage:wxHL(BU,58),padding:'0 2px'}),h),T)},
+  lede:function(h){return {open:wxTag('p',wxS({margin:'0 0 10px'}),chip('先看这句','#FFFFFF'))+para(h,{fontSize:(fs+0.5)+'px',fontWeight:'700',color:KS})}},
+  h2:function(h,i){return wxTag('p',wxS({margin:'0 0 10px'}),chip('第 '+i+' 步','#FFFFFF',{fontSize:'13px'})+wxTag('span',wxS({fontSize:'15px',fontWeight:'900',color:KS,marginLeft:'8px',verticalAlign:'-1px'}),i<total?'➜':'✓'))
+    +wxTag('h2',wxS({margin:'0 0 14px',padding:'0',fontSize:'19px',lineHeight:1.45,fontWeight:'900',color:KS,textAlign:'left'}),h+wxTag('span',wxS({display:'block',margin:'10px 0 0',lineHeight:'0'}),wxBar('40px','4px',KS,{borderRadius:'3px'})+wxBar('12px','4px',KS,{borderRadius:'3px',marginLeft:'4px'})))},
+  h3:function(h){return wxTag('h3',wxS({margin:'22px 0 10px',fontSize:'16px',fontWeight:'900',color:KS,lineHeight:1.5}),wxTag('span',wxS({color:KS,marginRight:'6px'}),'➜')+h)},
+  key:function(h){return sec(wxS({margin:'20px 0 '+gap+'px',padding:'12px 14px',backgroundColor:BU,border:'2.5px solid '+KS,borderRadius:'18px',textAlign:'center'}),wxTag('p',wxS({margin:'0',fontSize:'18px',lineHeight:1.55,fontWeight:'900',color:KS,textAlign:'center'}),h))},
+  quote:function(h,c){return sec(wxS({margin:'18px 0 '+gap+'px',padding:'14px 16px',backgroundColor:'#FFFFFF',border:'2.5px solid '+KS,borderRadius:'24px 24px 24px 4px'}),wxTag('p',wxS({margin:'0',fontSize:(fs+0.5)+'px',lineHeight:1.75,color:KS,fontWeight:'700',textAlign:'left'}),h)+(c?wxTag('p',wxS({margin:'8px 0 0',fontSize:'12px',fontWeight:'700',color:P.muted,textAlign:'right'}),'—— '+c):''))},
+  callout:function(l,h){return sec(wxS({margin:'18px 0 '+gap+'px',padding:'12px 14px',border:'2px dashed '+KS,borderRadius:'16px',backgroundColor:'#FFFFFF'}),wxTag('p',wxS({margin:'0 0 8px'}),chip('✎ '+l,pastel[3]))+para(h,{margin:'0',fontSize:(fs-0.5)+'px',color:KS}))},
+  stats:function(items){var rows=[];for(var i=0;i<items.length;i+=2)rows.push(items.slice(i,i+2));var n=0;return wxTag('table',wxS({width:'100%',margin:'4px 0 '+gap+'px',borderCollapse:'separate',borderSpacing:'6px 6px'}),'<tbody>'+rows.map(function(r){return '<tr>'+r.map(function(it){var k=n++%5;return wxTag('td',wxS({width:'50%',padding:'12px 10px',backgroundColor:pastel[k],borderRadius:'14px',border:'2px solid '+KS,verticalAlign:'top'}),wxTag('span',wxS({display:'block',fontFamily:WX_NUM,fontSize:'23px',fontWeight:'900',color:KS,lineHeight:1.2}),it.value)+wxTag('span',wxS({display:'block',marginTop:'4px',fontSize:'12px',lineHeight:1.5,color:KS}),it.label))}).join('')+(r.length<2?'<td style="width:50%"></td>':'')+'</tr>'}).join('')+'</tbody>')},
+  figure:function(src,cap){return sec(wxS({margin:'18px 0 '+gap+'px'}),wxImg(src,cap,{borderRadius:'14px',border:'2.5px solid '+KS,boxSizing:'border-box'})+(cap?wxTag('p',wxS({margin:'10px 0 0',fontSize:'12px',lineHeight:1.6,color:KS,textAlign:'center',fontWeight:'700'}),'↑ '+cap):''))},
+  ol:function(items){return sec(wxS({margin:'4px 0 '+gap+'px'}),items.map(function(h,i){var f=wxFirstSentence(h);return sec(wxS({margin:'0 0 8px',padding:'12px 12px',backgroundColor:'#FFFFFF',borderRadius:'14px',border:'2px solid '+KS}),para(wxTag('span',wxS({display:'inline-block',minWidth:'22px',height:'22px',lineHeight:'20px',textAlign:'center',borderRadius:'50%',backgroundColor:BU,border:'2px solid '+KS,color:KS,fontFamily:WX_NUM,fontSize:'12px',fontWeight:'900',marginRight:'8px',verticalAlign:'1px',boxSizing:'border-box'}),String(i+1))+(f[0]?wxTag('strong',wxS({color:KS,fontWeight:'900'}),f[0]):'')+f[1],{margin:'0',fontSize:(fs-0.5)+'px'}))}).join(''))},
+  table:{wrap:{margin:'8px 0 '+gap+'px',border:'2px solid '+KS,backgroundColor:'#FFFFFF'},th:{padding:'9px 6px',backgroundColor:BU,color:KS,fontWeight:'900',textAlign:'left',borderBottom:'2px solid '+KS},td:{padding:'9px 6px',borderBottom:'1px dashed '+wxMix(KS,'#ffffff',0.6),color:KS,verticalAlign:'top'},first:{fontWeight:'800'}},
+  hr:function(){return wxTag('p',wxS({margin:'18px 0',textAlign:'center',color:KS,letterSpacing:'8px',fontWeight:'900'}),'· ✎ ·')},
+  ending:function(h){return {own:true,html:wxTag('p',wxS({margin:'0 0 10px'}),chip('讲完啦 ✓',pastel[1]))+para(h)}}
+ }}
+ else if(theme==='wxCards'){var CM=V==='comic',BL=P.accent,YE=P.highlight,INKc=P.ink;
   var cardSt=CM?{margin:'0 4px 18px 0',padding:'18px 16px 6px',backgroundColor:P.card,border:'2.5px solid '+INKc,borderRadius:'4px',boxShadow:'5px 5px 0 '+INKc}
               :{margin:'0 0 18px',padding:'18px 16px 6px',backgroundColor:P.card,border:'2px solid '+P.line,borderRadius:'18px',boxShadow:'0 5px 0 '+(P.glow||P.line)};
   var pill=function(t,bg,fg,ex){return wxTag('span',wxS(wxX({display:'inline-block',fontSize:'12px',lineHeight:1.6,fontWeight:'900',letterSpacing:'1px',color:fg,backgroundColor:bg,padding:'2px 10px',borderRadius:CM?'3px':'999px',border:CM?'2px solid '+INKc:'0'},ex)),t)};
@@ -354,7 +388,8 @@ function wxBuild(theme,P,cfg,blocks){
   var cell=function(base,extra){return wxS(wxX(wxX({fontSize:tfs,lineHeight:1.6,letterSpacing:'0.2px',border:base.border||'0'},base),extra))};
   return wxTag('table',wxS(tw),'<thead><tr>'+b.head.map(function(x,j){return wxTag('th',cell(T.th,j===0?{whiteSpace:'nowrap'}:null),x)}).join('')+'</tr></thead><tbody>'+b.rows.map(function(r){return '<tr>'+r.map(function(x,j){var fx=null;if(j===0){fx=wxX({whiteSpace:'nowrap'},T.first)}return wxTag('td',cell(T.td,fx),x)}).join('')+'</tr>'}).join('')+'</tbody>')}
  var inCard=false;
- function openCard(){if(L.wrap&&!inCard){out.push('<section style="'+L.card.replace(/"/g,'&quot;')+'">');inCard=true}}
+ var cardN=0;
+ function openCard(){if(L.wrap&&!inCard){var cs=typeof L.card==='function'?L.card(cardN++):L.card;out.push('<section style="'+cs.replace(/"/g,'&quot;')+'">');inCard=true}}
  function closeCard(){if(inCard){out.push('</section>');inCard=false}}
  if(L.masthead)out.push(L.masthead());
  blocks.forEach(function(b){
