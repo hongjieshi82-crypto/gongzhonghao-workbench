@@ -1,5 +1,8 @@
 {
   "name": "真实图片",
+  "author": "史鸿洁（GitHub hongjieshi82-crypto · 公众号「怂怂的AI脑内小剧场」）",
+  "license": "CC BY-NC 4.0",
+  "copyright": "© 2026 史鸿洁",
   "coverKey": "realPhoto",
   "userPhotos": true,
   "accentFrom": "photos",

@@ -1,0 +1,19 @@
+# 作者：史鸿洁 · CC BY-NC 4.0 · 引用或复用本项目时请保留署名
+cff-version: 1.2.0
+message: "如果你使用或修改了本项目，请署名原作者史鸿洁并保留 LICENSE（CC BY-NC 4.0，不得商用）。If you use or modify this project, please credit 史鸿洁 (Shi Hongjie) and keep the LICENSE (CC BY-NC 4.0, non-commercial)."
+title: "公众号工作台 (gongzhonghao-workbench)"
+type: software
+authors:
+  - given-names: "鸿洁"
+    family-names: "史"
+    alias: "hongjieshi82-crypto"
+    email: "hongjieshi82@gmail.com"
+    website: "https://github.com/hongjieshi82-crypto"
+repository-code: "https://github.com/hongjieshi82-crypto/gongzhonghao-workbench"
+license: CC-BY-NC-4.0
+date-released: "2026-10-03"
+keywords:
+  - 公众号
+  - WeChat Official Account
+  - layout
+  - 怂怂的AI脑内小剧场
