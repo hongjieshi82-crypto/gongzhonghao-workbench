@@ -135,6 +135,7 @@ async function renderUserCover(){
  coverBusy=(async()=>{try{
   const photo=await loadImage(state.realCoverPhoto.url);const s=photoStyle();
   const big=(s.coverRenderer&&window[s.coverRenderer])?window[s.coverRenderer](photo,state.title||'未命名文章',state.accent,2):drawPhotoBanner(photo,state.title||'未命名文章',state.accent||PHOTO_FALLBACK_ACCENT,2);
+  if(creditOn()){await creditFontReady();drawCredit(big)}
   await saveCoverCanvas(big,photo);state.realCoverTitle=state.title;state.realCoverAccent=state.accent;updateCover();persist();return true;
  }catch(e){toast(e.message||'封面生成失败');return false}finally{coverBusy=null}})();
  return coverBusy;
@@ -149,6 +150,23 @@ let photoTitleTimer=null;
 function photoTitleChanged(){if(!photoStyle()||!state.realCoverPhoto?.url)return;clearTimeout(photoTitleTimer);photoTitleTimer=setTimeout(()=>renderUserCover(),900)}
 window.__wxPhotoBanner=drawPhotoBanner;
 
+/* ---------- 手写署名：封面右下角「@怂怂的AI脑内小剧场」（站酷快乐体子集，dist/fonts/；样图用同一套规则，见 README）。只画在图片上，不进复制的文章 HTML ---------- */
+const CREDIT_TEXT='@怂怂的AI脑内小剧场',CREDIT_FAMILY='WbCredit';
+const creditOn=()=>state.coverCredit!==false;
+async function creditFontReady(){try{await document.fonts.load(`40px ${CREDIT_FAMILY}`,CREDIT_TEXT)}catch{}return document.fonts.check(`40px ${CREDIT_FAMILY}`,CREDIT_TEXT)}
+function creditLayout(W,H){const size=Math.round(W*0.027),m=Math.round(W*0.025);return {size,x:W-m,y:H-m-Math.round(size*0.12)}}
+function drawCredit(c){
+ const W=c.width,H=c.height,g=c.getContext('2d');const {size,x,y}=creditLayout(W,H);
+ g.save();g.font=`${size}px ${CREDIT_FAMILY}`;g.textAlign='right';g.textBaseline='alphabetic';const tw=g.measureText(CREDIT_TEXT).width;
+ const bx=Math.max(0,Math.round(x-tw-size/3)),by=Math.max(0,Math.round(y-size*1.15)),bw=Math.max(1,Math.min(W-bx,Math.round(tw+size*2/3))),bh=Math.max(1,Math.min(H-by,Math.round(size*1.6)));
+ const d=g.getImageData(bx,by,bw,bh).data;let s=0,s2=0,n=0;for(let i=0;i<d.length;i+=4){const l=(0.299*d[i]+0.587*d[i+1]+0.114*d[i+2])/255;s+=l;s2+=l*l;n++}
+ const mean=s/n,sd=Math.sqrt(Math.max(0,s2/n-mean*mean)),light=mean>0.55,busy=sd>0.10;
+ if(busy||!light){const halo=light?'rgba(255,255,255,0.85)':'rgba(0,0,0,0.6)';g.save();g.shadowColor=halo;g.shadowBlur=size*0.22;if(!busy){g.shadowOffsetX=size*0.05;g.shadowOffsetY=size*0.05}g.fillStyle=halo;g.strokeStyle=halo;g.lineJoin='round';if(busy){g.lineWidth=size*0.1;g.strokeText(CREDIT_TEXT,x,y)}g.fillText(CREDIT_TEXT,x,y);g.restore()}
+ g.globalAlpha=0.92;g.fillStyle=light?'#1A1A1A':'#FFFFFF';g.fillText(CREDIT_TEXT,x,y);g.restore();
+ return {size,light,busy};
+}
+window.__wxCredit={draw:drawCredit,layout:creditLayout,ready:creditFontReady,text:CREDIT_TEXT,family:CREDIT_FAMILY};
+
 /* ---------- 界面：只在 userPhotos 风格下替换“复制生图指令”的部分 ---------- */
 const PHOTO_UI_ORIG={btn:document.getElementById('confirmVisualSlots').textContent,status:document.getElementById('planStatus').textContent};
 function photoUiToggle(){
@@ -162,6 +180,8 @@ function photoStyleOptions(box){
  const s=photoStyle(),has=state.realCoverPhoto?.url;const d=document.createElement('div');d.className='option';
  d.innerHTML=`<strong>封面图片</strong> <span class="muted">${esc(s.coverHint||'铺满 900×383 横幅，标题叠在照片上')}</span><div class="photoDrop cover" id="coverPhotoDrop" tabindex="0" role="button">${has?`<img alt="" src="${state.realCoverPhoto.url}">`:''}<span>${has?'点这里或拖进来换一张':'把封面图片拖到这里，或点一下选择'}</span><input type="file" id="coverPhotoInput" accept="${PHOTO_ACCEPT}" hidden></div><span class="muted">正文图：在左边每个虚线框里放你自己的图片。这套不生图，也不用发指令给助手。</span>`;
  box.append(d);wireDrop(d.querySelector('.photoDrop'),d.querySelector('input'),setUserCoverPhoto);
+ const cr=document.createElement('label');cr.className='option creditToggle';cr.innerHTML=`<input type="checkbox" id="coverCreditToggle"${creditOn()?' checked':''}> 封面右下角加手写署名「@怂怂的AI脑内小剧场」 <span class="muted">只在封面图上，不进复制的文章</span>`;box.append(cr);
+ cr.querySelector('input').onchange=async e=>{state.coverCredit=e.target.checked;persist();if(state.realCoverPhoto?.url){await renderUserCover();paint()}toast(state.coverCredit?'封面加上了手写署名':'封面不加署名')};
  if(typeof shotStyleOptions==='function')shotStyleOptions(box);
 }
 function photoSlotCard(item,index,card){

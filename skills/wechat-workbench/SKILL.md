@@ -43,6 +43,7 @@ Author: 史鸿洁 (Shi Hongjie, GitHub hongjieshi82-crypto). CC BY-NC 4.0: keep 
 
 - 生成前读取该风格的 `style-config.json`：`bodyPrompt`（正文图，默认 3:2、无大标题；风格写了 `bodyRatio` 或图内标题要求时按该风格）、`coverPrompt`（900×383 横幅封面）、`coverBanner`（横幅标题处理）、`layoutTheme`/`layoutPalette`。观察 `bodySample`、`coverSample` 样图作视觉参考；样图只代表画风，主体按文章重新构思，不照搬。
 - 她在“管理风格”里改的 Prompt 直接写回 style-config.json（旧版本备份在 `data/backups/styles`）。workspace.json 里不再保存风格 Prompt 或样图。
+- **手写署名（所有风格）**：**所有风格的每张正文图和封面右下角都必须有小号手写「@怂怂的AI脑内小剧场」**（离边缘约 3%，字号约图宽的 2.5–3%；浅色画面近黑 #1A1A1A、深色画面白色，背景杂时加柔和投影），逐字正确，不压住主体或标题；这是唯一的署名，不另加品牌、网址、水印或 © 标记。生成后逐字检查。粗线手绘图解的署名和图中标签同一种粗黑笔迹；其它风格用圆润的粗手写笔迹。「真实图片」「截图标注」的封面由网页画上（`coverCredit`，默认开），助手不要再叠一层。
 - **粗线手绘图解**：正文图横向 16:9（style-config 的 `bodyRatio`），图内有大号手写标题和简短手写标签（例外于“无大标题”）；**每张正文图和封面右下角都必须有小号手写「@怂怂的AI脑内小剧场」**，笔迹与图中标签一致，生成后逐字检查。
 - **真实图片**（`userPhotos: true`）：不生图，也不写 Prompt。她在网页里把自己的照片/截图拖进每个配图位置（存成 `bodyImageCandidates` 里 `source:"upload"` 的已保留图，和正文图一样写进 workspace.json），封面图片存在 `realCoverPhoto`，横幅封面由 `dist/photo.js` 在浏览器里生成并走 `/api/covers`。主色从照片里取（`photoAccent`，没有照片时 #3A5A78）。助手被要求“生成配图/封面”时，提醒她这套用自己的图，不要调用生图，也不要用 sync-workbench.py 覆盖她的图片或封面。
 - **截图标注**（`userPhotos: true`、`shotFrame: true`、`accentFrom: "preset"`）：同样不生图、没有 Prompt。她上传的产品截图由 `dist/shot.js` 套浅色外框；标注（1–3 处框选 + 放大镜头 + ①②③ 标签）在网页编辑器里做，候选图上 `original` 是原图、`annotations` 是标注、`url` 是压平后的 PNG。主色是 `shotAccent`（珊瑚 #FF5A36 默认 / 海蓝 #2F6BFF / 松绿 #18A058 / 葡紫 #7B5CFF）。封面由 `drawShotBanner` 生成。助手只帮她写文章（可以用 `> 【对比】旧版｜新版` 写对比块），不要生成或覆盖截图、标注和封面。
