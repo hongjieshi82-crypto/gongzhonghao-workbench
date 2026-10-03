@@ -134,7 +134,7 @@ async function renderUserCover(){
  if(coverBusy)await coverBusy;
  coverBusy=(async()=>{try{
   const photo=await loadImage(state.realCoverPhoto.url);const s=photoStyle();
-  const big=(s.coverRenderer&&window[s.coverRenderer])?window[s.coverRenderer](photo,state.title||'未命名文章',state.accent,2):drawPhotoBanner(photo,state.title||'未命名文章',state.accent||PHOTO_FALLBACK_ACCENT,2);
+  const big=(s.coverRenderer&&window[s.coverRenderer])?await window[s.coverRenderer](photo,state.title||'未命名文章',state.accent,2):drawPhotoBanner(photo,state.title||'未命名文章',state.accent||PHOTO_FALLBACK_ACCENT,2);
   if(creditOn()){await creditFontReady();drawCredit(big)}
   await saveCoverCanvas(big,photo);state.realCoverTitle=state.title;state.realCoverAccent=state.accent;updateCover();persist();return true;
  }catch(e){toast(e.message||'封面生成失败');return false}finally{coverBusy=null}})();
@@ -144,7 +144,7 @@ async function setUserCoverPhoto(file){
  const p=await readUserPhoto(file,2400);if(!p)return;
  state.realCoverPhoto={url:p.url,w:p.w,h:p.h,name:String(file.name||'').slice(0,80)};state.realCoverTitle='';
  await refreshPhotoAccent();if(!state.coverReady)await renderUserCover();
- paint();if(state.stage==='plan')renderStyleOptions();toast(photoStyle()?.shotFrame?'封面已生成：截图斜放在横幅里，一处放大镜头冲出画框':'封面已生成：照片铺满横幅，标题叠在照片上');
+ paint();if(state.stage==='plan')renderStyleOptions();toast(photoStyle()?.shotFrame?'封面已生成：截图压暗、关键一行点亮，标题贴成剪报纸条':'封面已生成：照片铺满横幅，标题叠在照片上');
 }
 let photoTitleTimer=null;
 function photoTitleChanged(){if(!photoStyle()||!state.realCoverPhoto?.url)return;clearTimeout(photoTitleTimer);photoTitleTimer=setTimeout(()=>renderUserCover(),900)}
@@ -180,13 +180,13 @@ function photoStyleOptions(box){
  const s=photoStyle(),has=state.realCoverPhoto?.url;const d=document.createElement('div');d.className='option';
  d.innerHTML=`<strong>封面图片</strong> <span class="muted">${esc(s.coverHint||'铺满 900×383 横幅，标题叠在照片上')}</span><div class="photoDrop cover" id="coverPhotoDrop" tabindex="0" role="button">${has?`<img alt="" src="${state.realCoverPhoto.url}">`:''}<span>${has?'点这里或拖进来换一张':'把封面图片拖到这里，或点一下选择'}</span><input type="file" id="coverPhotoInput" accept="${PHOTO_ACCEPT}" hidden></div><span class="muted">正文图：在左边每个虚线框里放你自己的图片。这套不生图，也不用发指令给助手。</span>`;
  box.append(d);wireDrop(d.querySelector('.photoDrop'),d.querySelector('input'),setUserCoverPhoto);
- const cr=document.createElement('label');cr.className='option creditToggle';cr.innerHTML=`<input type="checkbox" id="coverCreditToggle"${creditOn()?' checked':''}> 封面右下角加手写署名「@怂怂的AI脑内小剧场」 <span class="muted">只在封面图上，不进复制的文章</span>`;box.append(cr);
- cr.querySelector('input').onchange=async e=>{state.coverCredit=e.target.checked;persist();if(state.realCoverPhoto?.url){await renderUserCover();paint()}toast(state.coverCredit?'封面加上了手写署名':'封面不加署名')};
+ const cr=document.createElement('label');cr.className='option creditToggle';cr.innerHTML=`<input type="checkbox" id="coverCreditToggle"${creditOn()?' checked':''}> ${s.shotFrame?'封面和标注过的截图':'封面'}右下角加手写署名「@怂怂的AI脑内小剧场」 <span class="muted">只画在图上，不进复制的文章</span>`;box.append(cr);
+ cr.querySelector('input').onchange=async e=>{state.coverCredit=e.target.checked;persist();if(typeof shotRerenderAll==='function'){await shotRerenderAll();paint()}if(state.realCoverPhoto?.url){await renderUserCover();paint()}toast(state.coverCredit?'封面加上了手写署名':'封面不加署名')};
  if(typeof shotStyleOptions==='function')shotStyleOptions(box);
 }
 function photoSlotCard(item,index,card){
  const c=photoOf(item);card.classList.add('photoSlot');
- card.innerHTML=`<div class="slotHeader"><strong>${visualNumber(index)}</strong><span>${c?(photoStyle()?.shotFrame?'<button class="linkbtn" data-act="annotate">'+((c.annotations||[]).length?'改标注':'标注')+'</button> · ':'')+'<button class="linkbtn" data-act="remove">移除图片</button> · ':''}<button class="linkbtn" data-act="delete">删除这个位置</button></span></div><div class="photoDrop" tabindex="0" role="button">${c?`<img alt="" src="${c.url}">`:''}<span>${c?'点这里或拖进来换一张':'把照片或截图拖到这里，或点一下选择'}</span><input type="file" accept="${PHOTO_ACCEPT}" hidden></div>`;
+ card.innerHTML=`<div class="slotHeader"><strong>${visualNumber(index)}</strong><span>${c?(photoStyle()?.shotFrame?'<button class="linkbtn" data-act="annotate">'+shotBtnLabel(c,true)+'</button> · ':'')+'<button class="linkbtn" data-act="remove">移除图片</button> · ':''}<button class="linkbtn" data-act="delete">删除这个位置</button></span></div><div class="photoDrop" tabindex="0" role="button">${c?`<img alt="" src="${c.url}">`:''}<span>${c?'点这里或拖进来换一张':'把照片或截图拖到这里，或点一下选择'}</span><input type="file" accept="${PHOTO_ACCEPT}" hidden></div>`;
  wireDrop(card.querySelector('.photoDrop'),card.querySelector('input'),f=>putUserPhoto(item,f));
  card.querySelector('[data-act=delete]').onclick=()=>{removeUserPhoto(item).finally(()=>{state.visualPlan=state.visualPlan.filter(x=>x.id!==item.id);persist();renderVisualPlan()})};
  const rm=card.querySelector('[data-act=remove]');if(rm)rm.onclick=()=>removeUserPhoto(item);
@@ -215,7 +215,7 @@ function photoGallery(){
 }
 function photoCoverUi(){
  const s=photoStyle(),on=Boolean(s);
- const gh=document.getElementById('bodyVisualGallery').closest('.panel').querySelector('.panelhead .muted');if(gh){if(!gh.dataset.orig)gh.dataset.orig=gh.textContent;gh.textContent=on?(s.shotFrame?'用你自己的截图：可以标注、换一张或移除':'用你自己的图片：可以换一张或移除'):gh.dataset.orig}
+ const gh=document.getElementById('bodyVisualGallery').closest('.panel').querySelector('.panelhead .muted');if(gh){if(!gh.dataset.orig)gh.dataset.orig=gh.textContent;gh.textContent=on?(s.shotFrame?'截图和照片都可以放：截图可以加聚光标注（可选），照片原样放；也能换一张或移除':'用你自己的图片：可以换一张或移除'):gh.dataset.orig}
  $('coverFeedback').hidden=on;$('coverModify').hidden=on;$('coverPhotoPick').hidden=!on;
  if(on){$('coverPhotoPick').textContent=state.realCoverPhoto?.url?'换封面图片':'上传封面图片';if(!state.coverReady)$('coverEmpty').textContent='还没有封面。点“上传封面图片”，标题会直接叠在你的图片上。'}
 }
