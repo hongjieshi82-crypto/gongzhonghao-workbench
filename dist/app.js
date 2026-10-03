@@ -1,6 +1,6 @@
 // 作者：史鸿洁 · © 2026 史鸿洁 · 采用 CC BY-NC 4.0 许可（署名 · 非商业性使用），详见 LICENSE
 /* 公众号工作台 · 简化版（2026-10-03）
-   流程：① 文章 → ② 选风格（10 套之一：正文图 + 横幅封面 + 排版 + 配色一起定；「真实图片」用自己的图，见 photo.js）→ ③ 成品（手机预览、复制到公众号）。
+   流程：① 文章 → ② 选风格（11 套之一：正文图 + 横幅封面 + 排版 + 配色一起定；「真实图片」「截图标注」用自己的图，见 photo.js / shot.js）→ ③ 成品（手机预览、复制到公众号）。
    排版引擎 wx-layouts.js 与 Markdown 渲染 md.js 和 /workspace/wechat-layouts/src 下的同名文件逐字相同。 */
 const $=id=>document.getElementById(id);
 let PROJECT='~/Desktop/公众号工作台'; // 启动时从 /api/status 读取实际路径
@@ -26,7 +26,7 @@ function restoreEditorMarkdown(value){for(const [marker,token] of editorImageRef
 
 /* ---------- 风格 ---------- */
 const styleOf=name=>STYLE_BY_NAME[name]||null;
-function applyStyle(name){const b=wxImageStyleBindings[name];if(!b||!b.layout)return false;state.imageStyle=name;state.coverStyle=b.cover;state.theme=b.layout;state.layoutPalette={...b.palette};state.layoutPaletteFor=b.layout;state.accent=b.palette.accent||wxLayouts[b.layout].palette.accent;state.headingStyle='theme';state.tableStyle='layout';state.fontChoice='theme';if(STYLE_BY_NAME[name]?.userPhotos&&state.photoAccent)state.accent=state.photoAccent;return true}
+function applyStyle(name){const b=wxImageStyleBindings[name];if(!b||!b.layout)return false;state.imageStyle=name;state.coverStyle=b.cover;state.theme=b.layout;state.layoutPalette={...b.palette};state.layoutPaletteFor=b.layout;state.accent=b.palette.accent||wxLayouts[b.layout].palette.accent;state.headingStyle='theme';state.tableStyle='layout';state.fontChoice='theme';if(STYLE_BY_NAME[name]?.userPhotos){const pa=STYLE_BY_NAME[name].accentFrom==='preset'?state.shotAccent:state.photoAccent;if(pa)state.accent=pa}return true}
 function layoutLabel(name){const b=wxImageStyleBindings[name];if(!b||!b.layout)return '';const v=b.palette&&b.palette.variant&&wxLayoutVariants[b.palette.variant];return v?v.name:wxLayouts[b.layout].name}
 const portraitStyleSelected=()=>Boolean(styleOf(state.imageStyle)?.portrait);
 const cartoonStyleSelected=()=>styleOf(state.imageStyle)?.characterField==='cartoonCharacters';

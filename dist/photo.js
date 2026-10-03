@@ -7,6 +7,7 @@ const PHOTO_FALLBACK_ACCENT='#3A5A78';
 const PHOTO_TYPES=['image/jpeg','image/png','image/webp','image/gif'];
 const PHOTO_ACCEPT=PHOTO_TYPES.join(',');
 const photoStyle=()=>{const s=STYLE_BY_NAME[state.imageStyle];return s&&s.userPhotos?s:null};
+const STYLE_PRESET_ACCENT=()=>wxImageStyleBindings[state.imageStyle]?.palette?.accent||PHOTO_FALLBACK_ACCENT;
 const photoAccentFromPhotos=()=>(photoStyle()?.accentFrom||'photos')==='photos';
 function fileToDataUrl(file){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(file)})}
 function loadImage(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=()=>rej(Error('图片读不出来'));i.src=src})}
@@ -36,6 +37,7 @@ async function putUserPhoto(slot,file){
  const s=photoStyle();const p=await readUserPhoto(file,1600,Boolean(s&&s.keepPng));if(!p)return false;
  const old=(state.bodyImageCandidates||[]).filter(x=>x.slotId===slot.id&&x.source==='upload');
  const cand={id:new Date().toISOString()+'-'+Math.random().toString(36).slice(2,6),slotId:slot.id,url:p.url,alt:'图片',accepted:false,source:'upload',name:String(file.name||'').slice(0,80)};
+ if(s&&s.shotFrame&&typeof shotPrepareUpload==='function')await shotPrepareUpload(cand);
  state.bodyImageCandidates=[...(state.bodyImageCandidates||[]),cand];
  adoptBodyCandidate(cand,slot);
  if(!cand.accepted){state.bodyImageCandidates=state.bodyImageCandidates.filter(x=>x!==cand);return false}
@@ -71,10 +73,11 @@ function photoAccentFrom(imgs){
 function userPhotoUrls(){const u=(state.bodyImageCandidates||[]).filter(x=>x.accepted&&x.source==='upload'&&(state.markdown||'').includes(x.url)).map(x=>x.url);if(state.realCoverPhoto?.url)u.push(state.realCoverPhoto.url);return u}
 async function refreshPhotoAccent(){
  if(!photoStyle())return;
+ if(typeof shotSyncFrames==='function')await shotSyncFrames();
  if(photoAccentFromPhotos()){
   const imgs=[];for(const u of userPhotoUrls()){try{imgs.push(await loadImage(u))}catch{}}
   const a=imgs.length?photoAccentFrom(imgs):null;state.photoAccent=a||'';state.accent=a||PHOTO_FALLBACK_ACCENT;
- }
+ }else if(photoStyle().accentFrom==='preset')state.accent=state.shotAccent||STYLE_PRESET_ACCENT();
  if(state.realCoverPhoto?.url&&(state.realCoverTitle!==state.title||state.realCoverAccent!==state.accent||!state.coverReady))await renderUserCover();
 }
 
@@ -138,7 +141,7 @@ async function setUserCoverPhoto(file){
  const p=await readUserPhoto(file,2400);if(!p)return;
  state.realCoverPhoto={url:p.url,w:p.w,h:p.h,name:String(file.name||'').slice(0,80)};state.realCoverTitle='';
  await refreshPhotoAccent();if(!state.coverReady)await renderUserCover();
- paint();if(state.stage==='plan')renderStyleOptions();toast('封面已生成：照片铺满横幅，标题叠在照片上');
+ paint();if(state.stage==='plan')renderStyleOptions();toast(photoStyle()?.shotFrame?'封面已生成：截图斜放在横幅里，一处放大镜头冲出画框':'封面已生成：照片铺满横幅，标题叠在照片上');
 }
 let photoTitleTimer=null;
 function photoTitleChanged(){if(!photoStyle()||!state.realCoverPhoto?.url)return;clearTimeout(photoTitleTimer);photoTitleTimer=setTimeout(()=>renderUserCover(),900)}
@@ -161,10 +164,11 @@ function photoStyleOptions(box){
 }
 function photoSlotCard(item,index,card){
  const c=photoOf(item);card.classList.add('photoSlot');
- card.innerHTML=`<div class="slotHeader"><strong>${visualNumber(index)}</strong><span>${c?'<button class="linkbtn" data-act="remove">移除图片</button> · ':''}<button class="linkbtn" data-act="delete">删除这个位置</button></span></div><div class="photoDrop" tabindex="0" role="button">${c?`<img alt="" src="${c.url}">`:''}<span>${c?'点这里或拖进来换一张':'把照片或截图拖到这里，或点一下选择'}</span><input type="file" accept="${PHOTO_ACCEPT}" hidden></div>`;
+ card.innerHTML=`<div class="slotHeader"><strong>${visualNumber(index)}</strong><span>${c?(photoStyle()?.shotFrame?'<button class="linkbtn" data-act="annotate">'+((c.annotations||[]).length?'改标注':'标注')+'</button> · ':'')+'<button class="linkbtn" data-act="remove">移除图片</button> · ':''}<button class="linkbtn" data-act="delete">删除这个位置</button></span></div><div class="photoDrop" tabindex="0" role="button">${c?`<img alt="" src="${c.url}">`:''}<span>${c?'点这里或拖进来换一张':'把照片或截图拖到这里，或点一下选择'}</span><input type="file" accept="${PHOTO_ACCEPT}" hidden></div>`;
  wireDrop(card.querySelector('.photoDrop'),card.querySelector('input'),f=>putUserPhoto(item,f));
  card.querySelector('[data-act=delete]').onclick=()=>{removeUserPhoto(item).finally(()=>{state.visualPlan=state.visualPlan.filter(x=>x.id!==item.id);persist();renderVisualPlan()})};
  const rm=card.querySelector('[data-act=remove]');if(rm)rm.onclick=()=>removeUserPhoto(item);
+ const an=card.querySelector('[data-act=annotate]');if(an)an.onclick=()=>shotOpenEditor(item);
 }
 function photoConfirm(){
  const missing=(state.visualPlan||[]).filter(x=>!photoOf(x)).length;
@@ -189,7 +193,7 @@ function photoGallery(){
 }
 function photoCoverUi(){
  const s=photoStyle(),on=Boolean(s);
- const gh=document.getElementById('bodyVisualGallery').closest('.panel').querySelector('.panelhead .muted');if(gh){if(!gh.dataset.orig)gh.dataset.orig=gh.textContent;gh.textContent=on?'用你自己的图片：可以换一张或移除':gh.dataset.orig}
+ const gh=document.getElementById('bodyVisualGallery').closest('.panel').querySelector('.panelhead .muted');if(gh){if(!gh.dataset.orig)gh.dataset.orig=gh.textContent;gh.textContent=on?(s.shotFrame?'用你自己的截图：可以标注、换一张或移除':'用你自己的图片：可以换一张或移除'):gh.dataset.orig}
  $('coverFeedback').hidden=on;$('coverModify').hidden=on;$('coverPhotoPick').hidden=!on;
  if(on){$('coverPhotoPick').textContent=state.realCoverPhoto?.url?'换封面图片':'上传封面图片';if(!state.coverReady)$('coverEmpty').textContent='还没有封面。点“上传封面图片”，标题会直接叠在你的图片上。'}
 }

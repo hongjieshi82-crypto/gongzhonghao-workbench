@@ -17,10 +17,10 @@ description: 用 Codex 对话里的写作与原生生图能力，为桌面公众
 ## 界面流程（三步）
 
 1. **文章**（stage=`writing`）：输入框 `articleEntryInput`，按钮“直接排版”或“AI 润色”。也可以从顶部“文章库”切换已保存的文章。
-2. **选风格**（stage=`plan`）：左侧是文章和配图占位卡（`visualPlan`），右侧是 10 套风格卡片。**选一套风格就同时定下正文配图画风、横幅封面画风、公众号排版和配色**，不再有单独的封面风格或自动匹配。
+2. **选风格**（stage=`plan`）：左侧是文章和配图占位卡（`visualPlan`），右侧是 11 套风格卡片。**选一套风格就同时定下正文配图画风、横幅封面画风、公众号排版和配色**，不再有单独的封面风格或自动匹配。
 3. **成品**（stage=`layout`；旧值 images / cover / preview / delivery 也会显示在这一步）：手机预览、封面、正文图候选、“复制到公众号”，以及折叠的“微调”（主色、字号、行距、段距、图片圆角、栏目小字）。
 
-## 10 套风格（唯一来源：`data/style-library/<目录>/style-config.json`）
+## 11 套风格（唯一来源：`data/style-library/<目录>/style-config.json`）
 
 | 目录 | 名称（state.imageStyle） | coverStyle | 绑定排版 |
 |---|---|---|---|
@@ -34,11 +34,13 @@ description: 用 Codex 对话里的写作与原生生图能力，为桌面公众
 | pop-portrait | 波普拼贴人像 | popPortrait | wxJournal 波普拼贴 |
 | rough-sketch-diagram | 粗线手绘图解 | roughSketchDiagram | wxCards 粗线手绘 |
 | real-photo | 真实图片 | realPhoto | wxPhoto 图片优先 |
+| screenshot-annotate | 截图标注 | shotAnnotate | wxShot 产品拆解 |
 
 - 生成前读取该风格的 `style-config.json`：`bodyPrompt`（正文图，默认 3:2、无大标题；风格写了 `bodyRatio` 或图内标题要求时按该风格）、`coverPrompt`（900×383 横幅封面）、`coverBanner`（横幅标题处理）、`layoutTheme`/`layoutPalette`。观察 `bodySample`、`coverSample` 样图作视觉参考；样图只代表画风，主体按文章重新构思，不照搬。
 - 她在“管理风格”里改的 Prompt 直接写回 style-config.json（旧版本备份在 `data/backups/styles`）。workspace.json 里不再保存风格 Prompt 或样图。
 - **粗线手绘图解**：正文图横向 16:9（style-config 的 `bodyRatio`），图内有大号手写标题和简短手写标签（例外于“无大标题”）；**每张正文图和封面右下角都必须有小号手写「@怂怂的AI脑内小剧场」**，笔迹与图中标签一致，生成后逐字检查。
 - **真实图片**（`userPhotos: true`）：不生图，也不写 Prompt。她在网页里把自己的照片/截图拖进每个配图位置（存成 `bodyImageCandidates` 里 `source:"upload"` 的已保留图，和正文图一样写进 workspace.json），封面图片存在 `realCoverPhoto`，横幅封面由 `dist/photo.js` 在浏览器里生成并走 `/api/covers`。主色从照片里取（`photoAccent`，没有照片时 #3A5A78）。助手被要求“生成配图/封面”时，提醒她这套用自己的图，不要调用生图，也不要用 sync-workbench.py 覆盖她的图片或封面。
+- **截图标注**（`userPhotos: true`、`shotFrame: true`、`accentFrom: "preset"`）：同样不生图、没有 Prompt。她上传的产品截图由 `dist/shot.js` 套浅色外框；标注（1–3 处框选 + 放大镜头 + ①②③ 标签）在网页编辑器里做，候选图上 `original` 是原图、`annotations` 是标注、`url` 是压平后的 PNG。主色是 `shotAccent`（珊瑚 #FF5A36 默认 / 海蓝 #2F6BFF / 松绿 #18A058 / 葡紫 #7B5CFF）。封面由 `drawShotBanner` 生成。助手只帮她写文章（可以用 `> 【对比】旧版｜新版` 写对比块），不要生成或覆盖截图、标注和封面。
 - **霓虹科幻卡通**：默认用工作台原创角色（宇航员小孩、牛仔帽机器人、红辫子女孩）。`cartoonCharacters` 有内容时按她的说明设计，但只画原创角色，不画任何已有动画、漫画、游戏或品牌角色。不用先问她角色。
 - **两种人像风格**：读取 `portraitReference` 与 `portraitPersonLabel`。人物是作者本人（标签空或写“我/作者本人”）时按下面的作者档案；用她上传的照片时必须导出并观察原图作人脸参考。没有照片就先请她上传，不用样图人像或虚构脸替代。
 

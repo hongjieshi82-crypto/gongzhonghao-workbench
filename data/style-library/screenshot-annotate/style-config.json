@@ -1,0 +1,34 @@
+{
+  "name": "截图标注",
+  "coverKey": "shotAnnotate",
+  "userPhotos": true,
+  "accentFrom": "preset",
+  "keepPng": true,
+  "shotFrame": true,
+  "coverRenderer": "drawShotBanner",
+  "bodyPrompt": "",
+  "coverPrompt": "",
+  "bodyHint": "你自己的产品截图（不生图）：自动套浅色浏览器/手机外框，可加 1–3 处标注（框选 + 放大镜头 + 编号标签），图下不加说明",
+  "coverHint": "选一张截图：斜放在 900×383 横幅右侧，一处放大镜头冲出画框，标题分层大字在左边",
+  "accentHint": "主色一个：珊瑚 / 海蓝 / 松绿 / 葡紫 任选（默认珊瑚 #FF5A36）",
+  "planHint": "这套不生图：把产品截图拖进左边每个虚线框（或点一下选择），点「标注」框出重点，再放一张封面截图。",
+  "bodySample": "body-sample-v1.png",
+  "coverSample": "cover-sample-v1.png",
+  "bodyRatio": "原图比例（套浅色外框）",
+  "layoutTheme": "wxShot",
+  "layoutPalette": {
+    "accent": "#FF5A36",
+    "ink": "#1F2329",
+    "paper": "#FFFFFF"
+  },
+  "coverBanner": {
+    "layoutName": "产品拆解",
+    "short": "浅灰点阵底 · 带浏览器外框的截图斜放右侧 · 一处 2.6 倍放大镜头冲出画框 · 标题分层大字在左（浏览器里生成，可下载 PNG）",
+    "font": "系统粗黑体（苹方/思源黑体），主标题 900 字重",
+    "fill": "主标题近黑 #1F2329，引入小字白字放在主色胶囊里",
+    "stroke": "无描边；主标题下垫一层主色错位字 + 白色柔光，最后一行加主色马克笔底",
+    "container": "不用面板：浅灰渐变 + 点阵底，截图带浅色浏览器外框和柔和投影",
+    "light": "整体明亮，只有放大镜头和标注线用主色",
+    "layering": "点阵底 → 倾斜截图 → 区域框和连线 → 放大镜头 → 左侧标题，标题离边缘至少 40px"
+  }
+}

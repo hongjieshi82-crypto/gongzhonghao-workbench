@@ -35,6 +35,7 @@ var wxLayouts={
  wxBigType:{name:'荧光大字',hint:'纯白 · 超大黑字 · 空心巨号 · 荧光绿',kicker:'个人智能体',palette:{accent:'#5E9E00',highlight:'#9BE22A',ink:'#111311',muted:'#8F968C',line:'#E6EAE0',paper:'#FFFFFF',soft:'#F0F8E2'}},
  wxDataReport:{name:'金属报告',hint:'石墨灰底 · 等宽标签 · 进度条编号 · 仪表卡',kicker:'竞品分析',palette:{accent:'#1F2620',highlight:'#8CC21A',highlightText:'#4F7A00',ink:'#30362F',muted:'#7F8A7A',line:'#D6DCD0',paper:'#EFF2EC',soft:'#E4E9DE',card:'#FFFFFF'}},
  wxPhoto:{name:'图片优先',hint:'纯白 · 通栏照片 · 细线 · 编号小标题',kicker:'',palette:{accent:'#3A5A78',highlight:'#3A5A78',ink:'#222222',muted:'#8A8A8A',line:'#E6E6E6',paper:'#FFFFFF',soft:'#F4F5F6',card:'#FFFFFF'}},
+ wxShot:{name:'产品拆解',hint:'白底 · 01 / 功能点 · 提示框 · 马克笔下划线 · 对比块',kicker:'产品拆解',palette:{accent:'#FF5A36',highlight:'#FF5A36',ink:'#1F2329',muted:'#8A9099',line:'#E8EAEE',paper:'#FFFFFF',soft:'#F5F6F8',card:'#FFFFFF'}},
  wxJournal:{name:'暖色手账',hint:'桃色纸 · 胶带便签 · 楷体批注 · 波浪线',kicker:'手记',palette:{accent:'#E07B4F',highlight:'#FCD9BC',ink:'#4A4038',muted:'#9C8B78',line:'#EADCCB',paper:'#FFF7EE',soft:'#FFF0E2',note:'#FFEFDF',note2:'#DCF1E7',mint:'#6DBE9C',tape:'#F6C6A2',card:'#FFFFFF'}}
 };
 var wxLayoutOrder=['wxMagazine','wxHeadline','wxCards','wxBigType','wxDataReport','wxJournal'];
@@ -53,6 +54,7 @@ var wxImageStyleBindings={
  '波普拼贴人像':{cover:'popPortrait',layout:'wxJournal',palette:{variant:'pop',accent:'#2F5BD3',highlight:'#FFE27A',ink:'#222222',muted:'#7C7A70',paper:'#FFFCF4',soft:'#FFF4C9',note:'#FFF2B8',note2:'#E2EAFF',line:'#E4E0CF',mint:'#FF7A9C',tape:'#9DB4F2',card:'#FFFFFF',grid:'#E8ECF8'}}
  ,'粗线手绘图解':{cover:'roughSketchDiagram',layout:'wxCards',palette:{variant:'sketch',accent:'#2F7FC1',highlight:'#FEE69C',ink:'#1A1A1A',muted:'#6B6458',paper:'#FFFAEE',soft:'#FFF3CC',card:'#FFFFFF',line:'#E8DDC6',chipText:'#1A1A1A',sky:'#BDE7FF',mint:'#CDFCE8',lav:'#E9CEFB',peach:'#FFD6B8',butter:'#FEE69C'}}
  ,'真实图片':{cover:'realPhoto',layout:'wxPhoto',palette:{accent:'#3A5A78',ink:'#222222',paper:'#FFFFFF'}}
+ ,'截图标注':{cover:'shotAnnotate',layout:'wxShot',palette:{accent:'#FF5A36',ink:'#1F2329',paper:'#FFFFFF'}}
  ,'自动匹配文章':{cover:'auto',layout:null,palette:null} /* automatic: cover follows, layout stays as is */
 };
 
@@ -175,6 +177,11 @@ function wxEm(theme,P){
   hl:{backgroundColor:P.highlight,padding:'1px 3px'},
   circle:{display:'inline-block',lineHeight:'1.45',whiteSpace:'nowrap',textIndent:'0',border:'2.5px solid '+P.accent,borderRadius:'50%',padding:'1px 7px',margin:'0 1px'},
   wave:{textDecoration:'underline wavy '+(P.mint||P.accent),textUnderlineOffset:'5px'}};
+ if(theme==='wxShot')return{
+  strong:{color:P.ink,fontWeight:'800',backgroundImage:wxHL(wxMix(P.accent,'#ffffff',0.72),58),padding:'0 2px'},
+  hl:{backgroundImage:wxHL(wxMix(P.accent,'#ffffff',0.8),50),padding:'0 1px'},
+  circle:{display:'inline-block',lineHeight:'1.45',whiteSpace:'nowrap',textIndent:'0',border:'2px solid '+P.accent,borderRadius:'50%',padding:'0 6px',margin:'0 1px'},
+  wave:{textDecoration:'underline wavy '+P.accent,textUnderlineOffset:'4px'}};
  if(theme==='wxPhoto')return{
   strong:{color:P.accent,fontWeight:'700'},
   hl:{backgroundImage:wxHL(wxMix(P.accent,'#ffffff',0.84),58),padding:'0 1px'},
@@ -405,6 +412,32 @@ function wxBuild(theme,P,cfg,blocks){
   table:{wrap:{margin:'14px 0 '+(gap+8)+'px',borderTop:'1px solid '+KP},th:{padding:'9px 6px 9px 0',color:KP,fontWeight:'700',textAlign:'left',borderBottom:'1px solid '+KP},td:{padding:'10px 6px 10px 0',borderBottom:'1px solid '+HL,color:KP,verticalAlign:'top'},first:{fontWeight:'700'}},
   hr:function(){return rule('40px 0')},
   ending:function(h){return para(h)+wxTag('p',wxS({margin:'40px 0 0',lineHeight:'0',fontSize:'0'}),wxBar('24px','1px',AP))}
+ }}
+
+ /* ===== 8 产品拆解 ← 截图标注：白底、「01 / 功能点」编号、提示框、马克笔下划线、对比块；图片不加说明 ===== */
+ if(theme==='wxShot'){var AS=P.accent,KS2=P.ink,LS=P.line||'#E8EAEE',SS=P.soft||'#F5F6F8',MS=P.muted||'#8A9099',TS=wxMix(AS,'#ffffff',0.9);
+  var spill=function(t,bg,fg,ex){return wxTag('span',wxS(wxX({display:'inline-block',fontSize:'11px',lineHeight:1.7,fontWeight:'800',letterSpacing:'1.5px',color:fg||'#ffffff',backgroundColor:bg||AS,padding:'0 9px',borderRadius:'999px'},ex)),t)};
+  var tip=function(label,h,strong){return sec(wxS({margin:'26px 0',padding:'14px 16px 14px',backgroundColor:TS,borderRadius:'10px',border:'1px solid '+wxMix(AS,'#ffffff',0.72)}),wxTag('p',wxS({margin:'0 0 8px',lineHeight:'1.6'}),spill('TIP')+(label?wxTag('span',wxS({marginLeft:'8px',fontSize:'12.5px',fontWeight:'700',color:AS}),label):''))+para(h,{margin:'0',fontSize:(strong?fs+1:fs-0.5)+'px',fontWeight:strong?'700':'400',color:KS2,textAlign:'left'}))};
+  var vs=wxTag('span',wxS({display:'inline-block',width:'30px',height:'30px',lineHeight:'30px',borderRadius:'50%',backgroundColor:AS,color:'#ffffff',fontFamily:WX_NUM,fontSize:'12px',fontWeight:'900',textAlign:'center'}),'VS');
+  var compare=function(head,rows){var col=function(j){return wxTag('td',wxS({width:'45%',padding:'12px 12px 10px',verticalAlign:'top',backgroundColor:j?TS:SS,borderRadius:'10px',border:j?'1.5px solid '+AS:'1px solid '+LS}),wxTag('p',wxS({margin:'0 0 8px',fontSize:'13px',fontWeight:'800',color:j?AS:MS,letterSpacing:'1px'}),head[j]||'')+rows.map(function(r){return wxTag('p',wxS({margin:'0 0 6px',fontSize:(fs-1)+'px',lineHeight:1.65,color:KS2,textAlign:'left'}),(j?'✓ ':'· ')+(r[j]||''))}).join(''))};
+   return wxTag('table',wxS({width:'100%',margin:'24px 0 30px',borderCollapse:'separate',borderSpacing:'0'}),'<tbody><tr>'+col(0)+wxTag('td',wxS({width:'10%',textAlign:'center',verticalAlign:'middle',padding:'0 4px'}),vs)+col(1)+'</tr></tbody>')};
+  L={
+  root:{padding:'14px 16px 30px',backgroundColor:P.paper},p:{textAlign:'left'},
+  masthead:function(){var k=(cfg.layoutKicker||wxLayouts.wxShot.kicker||'').trim();return k?wxTag('p',wxS({margin:'0 0 16px'}),spill(k)):''},
+  title:function(h){return wxTag('h1',wxS({margin:'0 0 22px',padding:'0',fontSize:'23px',lineHeight:1.45,fontWeight:'800',color:KS2,letterSpacing:'0.5px'}),h,T)},
+  lede:function(h){return sec(wxS({margin:'0 0 '+(gap+8)+'px',padding:'14px 16px',backgroundColor:SS,borderRadius:'10px'}),wxTag('p',wxS({margin:'0 0 6px',fontSize:'12px',fontWeight:'800',letterSpacing:'2px',color:AS}),'一句话')+para(h,{margin:'0',fontSize:(fs+0.5)+'px',lineHeight:1.8,color:KS2}))},
+  h2:function(h,i){return wxTag('h2',wxS({margin:'48px 0 20px',padding:'0 0 10px',textAlign:'left',fontSize:'19px',lineHeight:1.5,fontWeight:'800',color:KS2,borderBottom:'1px solid '+LS}),wxTag('span',wxS({fontFamily:WX_NUM,fontWeight:'900',color:AS,marginRight:'2px'}),wxPad(i))+wxTag('span',wxS({fontFamily:WX_NUM,fontWeight:'400',color:MS,margin:'0 8px'}),'/')+h)},
+  h3:function(h){return wxTag('h3',wxS({margin:'28px 0 12px',fontSize:'16px',fontWeight:'800',color:KS2,lineHeight:1.55}),wxTag('span',wxS({color:AS,marginRight:'6px'}),'▸')+h)},
+  key:function(h){return tip('',h,true)},
+  quote:function(h,c){return sec(wxS({margin:'26px 0',padding:'12px 16px',backgroundColor:SS,borderRadius:'10px',borderLeft:'3px solid '+AS}),wxTag('p',wxS({margin:'0',fontSize:fs+'px',lineHeight:1.8,color:KS2,textAlign:'left'}),h)+(c?wxTag('p',wxS({margin:'8px 0 0',fontSize:'12px',color:MS,textAlign:'left'}),'— '+c):''))},
+  callout:function(l,h){if(/^(对比|VS)$/i.test(l)){var lines=String(h).split(/<br\s*\/?>/i).map(function(x){return x.trim()}).filter(Boolean).map(function(x){return x.split(/[｜|]/)});if(lines.length>=2&&lines.every(function(r){return r.length>=2}))return compare(lines[0],lines.slice(1).map(function(r){return [r[0].trim(),r.slice(1).join(' ').trim()]}))}return tip(l,h,false)},
+  stats:function(items){if(items.length===2){var c=function(it){return wxTag('td',wxS({width:'45%',padding:'14px 10px',backgroundColor:SS,borderRadius:'10px',textAlign:'center',verticalAlign:'top'}),wxTag('span',wxS({display:'block',fontFamily:WX_NUM,fontSize:'26px',fontWeight:'900',color:AS,lineHeight:1.2}),it.value)+wxTag('span',wxS({display:'block',marginTop:'4px',fontSize:'12px',lineHeight:1.5,color:MS}),it.label))};return wxTag('table',wxS({width:'100%',margin:'20px 0 '+(gap+8)+'px',borderCollapse:'separate',borderSpacing:'0'}),'<tbody><tr>'+c(items[0])+wxTag('td',wxS({width:'10%',textAlign:'center',verticalAlign:'middle'}),vs)+c(items[1])+'</tr></tbody>')}
+   return wxTag('table',wxS({width:'100%',margin:'18px 0 '+(gap+8)+'px',borderCollapse:'separate',borderSpacing:'6px 6px'}),'<tbody>'+wxRows(items).map(function(r){return '<tr>'+r.map(function(it){return wxTag('td',wxS({width:(100/r.length).toFixed(2)+'%',padding:'12px 10px',backgroundColor:SS,borderRadius:'10px',verticalAlign:'top'}),wxTag('span',wxS({display:'block',fontFamily:WX_NUM,fontSize:'23px',fontWeight:'900',color:AS,lineHeight:1.2}),it.value)+wxTag('span',wxS({display:'block',marginTop:'4px',fontSize:'12px',lineHeight:1.5,color:MS}),it.label))}).join('')+'</tr>'}).join('')+'</tbody>')},
+  figure:function(src){return sec(wxS({margin:'26px 0'}),wxImg(src,'',{}))},
+  ol:function(items){return sec(wxS({margin:'4px 0 '+gap+'px'}),items.map(function(h,i){var f=wxFirstSentence(h);return para(wxTag('span',wxS({display:'inline-block',width:'22px',height:'22px',lineHeight:'22px',textAlign:'center',borderRadius:'50%',backgroundColor:AS,color:'#ffffff',fontFamily:WX_NUM,fontSize:'12px',fontWeight:'900',marginRight:'8px',verticalAlign:'1px'}),String(i+1))+(f[0]?wxTag('strong',wxS({color:KS2,fontWeight:'800'}),f[0]):'')+f[1],{margin:'0',padding:'10px 0',borderBottom:'1px solid '+LS})}).join(''))},
+  table:{wrap:{margin:'20px 0 '+(gap+8)+'px',border:'1px solid '+LS},th:{padding:'9px 8px',backgroundColor:SS,color:KS2,fontWeight:'800',textAlign:'left',borderBottom:'1px solid '+LS},td:{padding:'9px 8px',borderBottom:'1px solid '+LS,color:KS2,verticalAlign:'top'},first:{fontWeight:'800',color:AS}},
+  hr:function(){return wxTag('p',wxS({margin:'36px 0',lineHeight:'0',fontSize:'0',borderTop:'1.5px dashed '+LS}),'\u200b')},
+  ending:function(h){return para(h)+wxTag('p',wxS({margin:'40px 0 0',textAlign:'center'}),spill('拆解完毕',AS,'#ffffff',{fontSize:'12px',padding:'2px 14px',letterSpacing:'3px'}))}
  }}
 
  /* ---------- assemble ---------- */
