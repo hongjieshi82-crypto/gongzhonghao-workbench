@@ -1,0 +1,157 @@
+<!doctype html>
+<!-- 作者：史鸿洁 · © 2026 史鸿洁 · 采用 CC BY-NC 4.0 许可（署名 · 非商业性使用），详见 LICENSE -->
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="author" content="史鸿洁">
+<link rel="icon" href="data:,">
+<title>公众号排版工作台</title>
+<style>
+/* 文章本体不套全局 border-box，保持浏览器默认值，复制出的内联样式才与成品审阅页逐字相同 */
+*:not(#article,#article *,#copyStage *,#copyFallback *){box-sizing:border-box}
+[hidden]{display:none!important}
+/* © 2026 史鸿洁 · CC BY-NC 4.0 */
+.credit{margin:28px 0 18px;text-align:center;font-size:12px;color:#93a198;letter-spacing:.3px}.credit a{color:inherit;text-decoration:none}.credit a:hover{text-decoration:underline}
+body{margin:0;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;color:#20332d;background:#f3f5f1}
+button,input,select,textarea{font:inherit}button{cursor:pointer}button:disabled{cursor:default;opacity:.55}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #82bfae;outline-offset:2px}
+.top{height:64px;background:#fff;border-bottom:1px solid #e5eae4;display:flex;align-items:center;justify-content:space-between;padding:0 24px;gap:16px;position:sticky;top:0;z-index:20}
+.brand{display:flex;align-items:center;gap:11px;font-weight:750;font-size:18px}.mark{width:32px;height:32px;border-radius:10px;background:#1b6b59;color:#fff;display:grid;place-items:center}
+.steps{display:flex;gap:6px}.step{border:0;background:transparent;color:#6b7a71;border-radius:999px;padding:8px 16px;font-weight:650}
+.step[aria-current="step"]{background:#e3efe9;color:#1b6b59}
+.topRight{display:flex;align-items:center;gap:12px}
+.btn{border:1px solid #dce5dc;background:#fff;color:#294339;border-radius:10px;padding:10px 15px;font-weight:650}.btn.primary{background:#1b6b59;color:#fff;border-color:#1b6b59}
+.btn.big{width:100%;padding:14px;font-size:16px}.linkbtn{border:0;background:transparent;color:#1b6b59;font-weight:650;padding:4px 0}
+.muted{color:#819087;font-size:12px}.tips{color:#5f6f66;font-size:13px;line-height:1.6}
+.panel{background:#fff;border:1px solid #e4eae3;border-radius:16px;min-width:0;overflow:hidden;box-shadow:0 4px 20px #20332d08}
+.panelhead{padding:16px 20px;border-bottom:1px solid #edf0eb;display:flex;align-items:center;justify-content:space-between;gap:10px}.panelhead h2{margin:0;font-size:15px}
+.pbody{padding:18px 20px}
+.stage{display:none;padding:16px;max-width:1500px;margin:auto}
+body[data-stage="writing"] #stageWriting,body[data-stage="plan"] #stagePlan,body[data-stage="layout"] #layoutStage{display:grid}
+/* ① 文章 */
+#stageWriting{grid-template-columns:minmax(0,900px);justify-content:center}
+.libraryRow{display:flex;gap:10px;align-items:center;margin-bottom:12px}.libraryRow select{flex:1;min-width:0;padding:9px 10px;border:1px solid #dce5dc;border-radius:10px;background:#fff}
+#articleEntryInput{width:100%;min-height:58vh;border:1px solid #dce5dc;border-radius:12px;padding:16px;line-height:1.8;resize:vertical;color:#34463e;font-size:15px}
+.rowActions{display:flex;gap:10px;justify-content:flex-end;margin-top:12px;flex-wrap:wrap}
+/* ② 选风格 */
+#stagePlan{grid-template-columns:minmax(0,1fr) 460px;gap:16px;align-items:start}
+#visualPlanPreview{padding:24px 26px 40px;line-height:1.85;font-size:15px;max-height:calc(100dvh - 140px);overflow:auto;color:#34463e}
+#visualPlanPreview img{max-width:100%;height:auto;border-radius:8px}#visualPlanPreview h1{font-size:22px;margin:0 0 16px}#visualPlanPreview h2{font-size:18px;margin:26px 0 10px}
+#visualPlanPreview blockquote{margin:14px 0;padding:10px 14px;border-left:3px solid #c9d8cf;background:#f6f9f6}
+#visualPlanPreview table{border-collapse:collapse;width:100%;font-size:13px}#visualPlanPreview td,#visualPlanPreview th{border:1px solid #dce5dc;padding:6px}
+.visualPlaceholder{border:2px dashed #8cc0aa;background:#f2faf6;border-radius:12px;padding:12px 14px;margin:14px 0}
+.slotHeader{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;color:#1b6b59}
+.inlinePlanLabel{display:block;font-size:12px;color:#5f6f66;margin-top:6px}.inlinePlanLabel textarea{display:block;width:100%;min-height:54px;margin-top:4px;border:1px solid #d5e3da;border-radius:8px;padding:7px;resize:vertical;font-size:13px}
+.addVisualBetween{display:block;margin:2px 0 10px;border:0;background:transparent;color:#9aaba1;font-size:12px;padding:2px 0}.addVisualBetween:hover{color:#1b6b59}
+.styleSide{position:sticky;top:80px;max-height:calc(100dvh - 96px);overflow:auto}
+.styleGrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.styleCard{border:2px solid #e2e9e3;background:#fff;border-radius:12px;padding:6px;text-align:left;display:flex;flex-direction:column;gap:5px}
+.styleCard[aria-pressed="true"]{border-color:#1b6b59;box-shadow:0 0 0 3px #1b6b5922}
+.styleThumbs{display:grid;grid-template-columns:1fr;gap:4px}.styleThumbs img{width:100%;aspect-ratio:2.35/1;object-fit:cover;border-radius:7px;background:#eef2ee;display:block}
+.styleThumbs img.body{aspect-ratio:3/2}
+.styleCard strong{font-size:14px}.styleCard small{font-size:11.5px;color:#7a8a80}
+.styleSummary{margin:14px 0;padding:12px 14px;border-radius:12px;background:#f2f7f3;font-size:13px;line-height:1.7}
+.swatches{display:inline-flex;gap:4px;vertical-align:middle;margin-left:4px}.swatches i{width:14px;height:14px;border-radius:4px;border:1px solid #0002;display:inline-block}
+.option{display:block;margin:10px 0;padding:10px 12px;border:1px solid #e2e9e3;border-radius:10px;font-size:13px;line-height:1.6}
+.option input[type=text],.option input:not([type]){width:100%;margin-top:6px;border:1px solid #dce5dc;border-radius:8px;padding:8px}
+.option .portraitPreview{display:flex;gap:8px;align-items:center;margin-top:6px}.option .portraitPreview img{width:44px;height:44px;object-fit:cover;border-radius:8px}
+#imageIdea{width:100%;min-height:64px;border:1px solid #dce5dc;border-radius:10px;padding:9px;resize:vertical;margin-top:4px}
+/* ③ 成品 */
+#layoutStage{grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start}
+#layoutStage .preview{background:#e8ece7;padding:18px 12px;display:flex;justify-content:center;max-height:calc(100dvh - 96px);overflow:auto}
+#layoutStage .phone{width:390px;max-width:100%;background:#fff;border:1px solid #d9e0d8;border-radius:18px;box-shadow:0 18px 46px #28433720;overflow:hidden;flex:none;align-self:flex-start}
+.phonebar{height:36px;border-bottom:1px solid #eef1ec;display:flex;justify-content:center;align-items:center;color:#64736a;font-size:12px;background:#fff}
+#article{overflow-wrap:anywhere}
+.side{display:flex;flex-direction:column;gap:14px;position:sticky;top:80px;max-height:calc(100dvh - 96px);overflow:auto}
+.side>*{flex-shrink:0}
+.coverBox img{width:100%;aspect-ratio:900/383;object-fit:cover;border-radius:10px;display:block;background:#eef2ee}
+.coverEmpty{aspect-ratio:900/383;border-radius:10px;border:2px dashed #cfdcd3;display:grid;place-items:center;color:#8a998f;font-size:13px;text-align:center;padding:10px}
+.btnRow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.gallery{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.visualImageCard{border:1px solid #e2e9e3;border-radius:10px;padding:8px;font-size:12px;display:flex;flex-direction:column;gap:6px}
+.visualImageCard img{width:100%;border-radius:7px;display:block}.visualImageCard p{margin:0;color:#6b7a71}
+.visualImageCard textarea{width:100%;min-height:50px;border:1px solid #dce5dc;border-radius:8px;padding:6px;font-size:12px}
+.visualImageCard .btn{padding:6px 9px;font-size:12px}.imageCandidateActions{display:flex;gap:6px;flex-wrap:wrap}
+.emptyVisual{background:#f7f9f7;color:#8a998f}
+details.tune{border:1px solid #e4eae3;border-radius:12px;background:#fff}details.tune summary{padding:12px 16px;font-weight:650;cursor:pointer}
+.tuneBody{padding:0 16px 14px;display:grid;gap:10px}.tuneBody label{display:grid;grid-template-columns:110px 1fr;align-items:center;gap:10px;font-size:13px}
+.tuneBody input[type=text]{border:1px solid #dce5dc;border-radius:8px;padding:6px 8px}
+#coverFeedback{width:100%;min-height:54px;border:1px solid #dce5dc;border-radius:8px;padding:8px;margin-top:8px;resize:vertical}
+dialog{border:1px solid #dce5dc;border-radius:16px;padding:20px;max-width:900px;width:calc(100% - 30px);color:#20332d}
+dialog::backdrop{background:#20332d55}
+#editorDialog textarea{width:100%;height:60vh;border:1px solid #dce5dc;border-radius:10px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;line-height:1.7}
+#editorDialog input{width:100%;font-size:18px;font-weight:700;border:0;border-bottom:1px solid #e3e9e3;padding:8px 0;margin-bottom:10px}
+.styleEditRow{border-top:1px solid #edf0eb;padding:12px 0}.styleEditRow textarea{width:100%;min-height:110px;border:1px solid #dce5dc;border-radius:8px;padding:8px;font-size:12.5px;margin-top:4px}
+#copyStage,#copyFallback{position:fixed;left:-10000px;top:0;width:388px;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:#20332d;color:#fff;padding:11px 18px;border-radius:999px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:50;max-width:90vw}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+@media(max-width:1000px){#stagePlan,#layoutStage{grid-template-columns:1fr}.styleSide,.side{position:static;max-height:none}.steps .step{padding:8px 10px}}
+</style></head>
+<body data-stage="writing">
+<header class="top">
+ <div class="brand"><span class="mark">文</span>公众号工作台</div>
+ <nav class="steps" aria-label="步骤"><button class="step" data-go="writing">① 文章</button><button class="step" data-go="plan">② 选风格</button><button class="step" data-go="layout">③ 成品</button></nav>
+ <div class="topRight"><span class="muted" id="saved">自动保存</span><button class="btn primary" id="copy">复制到公众号</button></div>
+</header>
+
+<section class="stage" id="stageWriting">
+ <div class="panel">
+  <div class="panelhead"><h2>文章</h2><span class="muted">粘贴写好的文章（第一行当标题），或写想法、贴链接</span></div>
+  <div class="pbody">
+   <div class="libraryRow"><span class="muted">我的文章</span><select id="librarySelect" aria-label="打开另一篇文章"></select><button class="btn" id="newArticle">＋ 新文章</button></div>
+   <textarea id="articleEntryInput" aria-label="文章或创作素材" spellcheck="false" placeholder="# 文章标题&#10;&#10;在这里粘贴正文……&#10;&#10;也可以只写想法和参考链接，再点“请助手润色”。"></textarea>
+   <div class="rowActions"><span class="muted" id="articleEntryStatus" role="status" style="margin-right:auto;align-self:center"></span><button class="btn" id="polishArticleEntry">请助手润色（复制指令）</button><button class="btn primary" id="useArticle">用这篇，下一步 →</button></div>
+  </div>
+ </div>
+</section>
+
+<section class="stage" id="stagePlan">
+ <div class="panel"><div class="panelhead"><h2>配图位置</h2><span class="muted">虚线框是建议的配图位置，可以删，也可以在段落下面“＋在这里加配图”</span></div><div id="visualPlanPreview"></div></div>
+ <div class="panel styleSide">
+  <div class="panelhead"><h2>选一个风格</h2><button class="linkbtn" id="manageStyles">管理风格</button></div>
+  <div class="pbody">
+   <div class="styleGrid" id="styleCards"></div>
+   <div class="styleSummary" id="styleSummary">选好风格后，正文图、横幅封面、排版和配色会一起定下来。</div>
+   <div id="styleOptions"></div>
+   <label class="tips" style="display:block">补充画面想法（选填）<textarea id="imageIdea" placeholder="留空时按每个配图位置的描述，由助手结合文章构思"></textarea></label>
+   <button class="btn primary big" id="confirmVisualSlots" style="margin-top:12px">确认，复制生图指令 →</button>
+   <p class="tips" id="planStatus" style="margin:10px 0 0">指令会复制到剪贴板，粘贴给助手发送；图和封面做好后会自动出现在“③ 成品”。</p>
+  </div>
+ </div>
+</section>
+
+<main class="stage" id="layoutStage">
+ <section class="panel layoutPreviewPanel"><div class="panelhead"><h2>手机预览</h2><span><button class="linkbtn" id="editArticle">编辑正文</button> · <button class="linkbtn" id="backToStyle">换风格</button></span></div>
+  <div class="preview"><div class="phone"><div class="phonebar">公众号文章预览</div><article id="article"></article></div></div></section>
+ <aside class="side">
+  <div class="panel"><div class="pbody">
+   <button class="btn primary big" id="copyBig">复制到公众号</button>
+   <p class="tips" style="margin:8px 0 0">只复制正文（不含标题和封面）。标题在公众号标题栏填，封面单独上传。</p>
+   <div class="btnRow"><button class="btn" id="downloadWide" disabled>下载封面</button><button class="btn" id="download">导出 Markdown</button></div>
+  </div></div>
+  <div class="panel coverBox"><div class="panelhead"><h2>横幅封面</h2><span class="muted" id="coverStyleName"></span></div><div class="pbody">
+   <img id="coverWideImage" alt="横幅封面" hidden><div class="coverEmpty" id="coverEmpty">还没有封面。确认风格后，助手会按这套风格做一张 900×383 横幅封面。</div>
+   <textarea id="coverFeedback" placeholder="想怎么改封面？（选填）"></textarea>
+   <div class="btnRow"><button class="btn" id="coverModify">复制修改封面的指令</button></div>
+  </div></div>
+  <div class="panel"><div class="panelhead"><h2>正文配图</h2><span class="muted">喜欢就保留，不满意可修改或重做</span></div><div class="pbody"><div class="gallery" id="bodyVisualGallery"></div></div></div>
+  <details class="tune"><summary>微调</summary><div class="tuneBody">
+   <label>主色<input type="color" id="accent"></label>
+   <label>正文字号 <span id="fontLabel"></span><input type="range" id="font" min="14" max="20" step="1"></label>
+   <label>行距 <span id="lineLabel"></span><input type="range" id="line" min="1.5" max="2.3" step="0.05"></label>
+   <label>段落间距 <span id="gapLabel"></span><input type="range" id="gap" min="10" max="28" step="1"></label>
+   <label>图片圆角 <span id="radiusLabel"></span><input type="range" id="radius" min="0" max="24" step="1"></label>
+   <label>刊头小字<input type="text" id="layoutKicker" placeholder="留空用排版自带的"></label>
+   <button class="btn" id="resetTune">恢复这套风格的默认</button>
+  </div></details>
+ </aside>
+</main>
+
+<dialog id="editorDialog"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px"><strong>编辑正文</strong><button class="btn primary" id="closeEditor">完成</button></div>
+ <input id="title" aria-label="文章标题" placeholder="文章标题"><textarea id="markdown" aria-label="正文" spellcheck="false"></textarea>
+ <div class="btnRow"><button class="btn" id="imageButton">＋ 插入图片</button><button class="btn" id="tableButton">＋ 插入表格</button><span class="muted" style="align-self:center">先在正文里点一下插入位置</span></div>
+ <input id="imageInput" type="file" accept="image/*" multiple hidden></dialog>
+<dialog id="styleDialog"><div style="display:flex;justify-content:space-between;align-items:center"><strong>管理风格</strong><button class="btn" id="closeStyles">关闭</button></div>
+ <p class="muted">改的是 data/style-library 里每套风格的 Prompt，下一次生成时生效，不会重做已有图片。旧版本自动存进 data/backups/styles。</p><div id="styleEditRows"></div></dialog>
+<footer class="credit" id="siteCredit">© 2026 史鸿洁 · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" target="_blank" rel="noopener">CC BY-NC 4.0</a></footer>
+<div id="copyStage" aria-hidden="true"></div><div id="copyFallback" aria-hidden="true"></div>
+<div class="toast" id="toast" role="status"></div>
+<script src="md.js"></script><script src="wx-layouts.js"></script><script src="app.js"></script>
+</body></html>

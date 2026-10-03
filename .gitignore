@@ -1,0 +1,25 @@
+# 系统与依赖
+.DS_Store
+node_modules/
+*.tmp
+__pycache__/
+
+# 密钥
+.env
+.env.*
+
+# 个人数据：文章、图片、封面、当前稿、文章库、备份、人像参考
+data/*
+!data/style-library/
+data/style-library/_owner/
+data/style-library/*/owner-portrait.png
+data/style-library/*/*owner*.png
+data/style-library/*/*owner*.jpg
+data/style-library/*/user-reference.png
+
+# 已发布的成品与备份
+成品/
+*备份*/
+_archive/
+# 霓虹科幻卡通样图里有作者本人的卡通形象
+data/style-library/neon-scifi-cartoon/*-sample-v1.*
