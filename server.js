@@ -16,12 +16,12 @@ const libraryDir = path.join(dataDir, 'library');
 const backupDir = path.join(dataDir, 'backups');
 const DOCUMENT_LIMIT = 40000000;
 const COVER_KINDS = ['wide', 'square', 'portrait', 'proof', 'source'];
-// 9 套风格的固定顺序（目录名）
-const STYLE_ORDER = ['vintage-paper', 'neon-metal', 'retro-pop-comic', 'dynamic-narrative-comic', 'warm-handdrawn-info', 'neon-scifi-cartoon', 'neon-portrait', 'pop-portrait', 'rough-sketch-diagram'];
+// 10 套风格的固定顺序（目录名）
+const STYLE_ORDER = ['vintage-paper', 'neon-metal', 'retro-pop-comic', 'dynamic-narrative-comic', 'warm-handdrawn-info', 'neon-scifi-cartoon', 'neon-portrait', 'pop-portrait', 'rough-sketch-diagram', 'real-photo'];
 // 跟着文章走的字段；其它字段（人物照片等）是全局的，切换文章时保留
-const ARTICLE_KEYS = ['articleId', 'title', 'markdown', 'imageStyle', 'coverStyle', 'theme', 'layoutPalette', 'layoutPaletteFor', 'accent', 'headingStyle', 'tableStyle', 'fontChoice', 'font', 'line', 'gap', 'radius', 'layoutKicker', 'layoutHideFigLabels', 'stage', 'generated', 'visualPlan', 'visualPlanConfirmed', 'selectedVisualPlanId', 'bodyImageCandidates', 'bodyImageAssignments', 'imageIdea', 'coverReady', 'coverRevision', 'coverAccepted', 'coverFeedback', 'coverGenerationPending', 'imageGenerationPending', 'generationStartedAt', 'articleEntryInput', 'articleDraftPending', 'includeOwner', 'cartoonCharacters', 'brief', 'coverTitle', 'coverCropOffset', 'writingView'];
+const ARTICLE_KEYS = ['articleId', 'title', 'markdown', 'imageStyle', 'coverStyle', 'theme', 'layoutPalette', 'layoutPaletteFor', 'accent', 'headingStyle', 'tableStyle', 'fontChoice', 'font', 'line', 'gap', 'radius', 'layoutKicker', 'layoutHideFigLabels', 'stage', 'generated', 'visualPlan', 'visualPlanConfirmed', 'selectedVisualPlanId', 'bodyImageCandidates', 'bodyImageAssignments', 'imageIdea', 'coverReady', 'coverRevision', 'coverAccepted', 'coverFeedback', 'coverGenerationPending', 'imageGenerationPending', 'generationStartedAt', 'articleEntryInput', 'articleDraftPending', 'includeOwner', 'cartoonCharacters', 'brief', 'coverTitle', 'coverCropOffset', 'writingView', 'photoAccent', 'realCoverPhoto', 'realCoverTitle', 'realCoverAccent'];
 const types = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp' };
-const STATIC_FILES = ['index.html', 'app.js', 'md.js', 'wx-layouts.js'];
+const STATIC_FILES = ['index.html', 'app.js', 'md.js', 'wx-layouts.js', 'photo.js'];
 
 function send(res, status, body, type = 'application/json; charset=utf-8', cache = 'no-store') {
   res.writeHead(status, { 'content-type': type, 'cache-control': cache, 'x-content-type-options': 'nosniff' });
@@ -79,6 +79,7 @@ async function listStyles() {
     const body = await sampleFile(dir, c.bodySample), cover = await sampleFile(dir, c.coverSample);
     out.push({ dir, name: c.name, coverKey: c.coverKey, layoutTheme: c.layoutTheme, layoutName: c.coverBanner?.layoutName || '', bannerShort: c.coverBanner?.short || '',
       bodyPrompt: c.bodyPrompt || '', coverPrompt: c.coverPrompt || '', portrait: Boolean(c.samplePhoto) || ['neon-portrait', 'pop-portrait'].includes(dir), characterField: c.characterField || '', bodyRatio: c.bodyRatio || '3:2',
+      userPhotos: Boolean(c.userPhotos), accentFrom: c.accentFrom || '', keepPng: Boolean(c.keepPng), bodyHint: c.bodyHint || '', coverHint: c.coverHint || '', accentHint: c.accentHint || '', planHint: c.planHint || '', coverRenderer: c.coverRenderer || '',
       bodySampleUrl: body ? `/api/style-library/${dir}/${encodeURIComponent(body)}` : '', coverSampleUrl: cover ? `/api/style-library/${dir}/${encodeURIComponent(cover)}` : '' });
   }
   return out;

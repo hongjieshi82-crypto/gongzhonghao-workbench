@@ -1,6 +1,6 @@
 // 作者：史鸿洁 · © 2026 史鸿洁 · 采用 CC BY-NC 4.0 许可（署名 · 非商业性使用），详见 LICENSE
 /* 公众号工作台 · 简化版（2026-10-03）
-   流程：① 文章 → ② 选风格（9 套之一：正文图 + 横幅封面 + 排版 + 配色一起定）→ ③ 成品（手机预览、复制到公众号）。
+   流程：① 文章 → ② 选风格（10 套之一：正文图 + 横幅封面 + 排版 + 配色一起定；「真实图片」用自己的图，见 photo.js）→ ③ 成品（手机预览、复制到公众号）。
    排版引擎 wx-layouts.js 与 Markdown 渲染 md.js 和 /workspace/wechat-layouts/src 下的同名文件逐字相同。 */
 const $=id=>document.getElementById(id);
 let PROJECT='~/Desktop/公众号工作台'; // 启动时从 /api/status 读取实际路径
@@ -26,7 +26,7 @@ function restoreEditorMarkdown(value){for(const [marker,token] of editorImageRef
 
 /* ---------- 风格 ---------- */
 const styleOf=name=>STYLE_BY_NAME[name]||null;
-function applyStyle(name){const b=wxImageStyleBindings[name];if(!b||!b.layout)return false;state.imageStyle=name;state.coverStyle=b.cover;state.theme=b.layout;state.layoutPalette={...b.palette};state.layoutPaletteFor=b.layout;state.accent=b.palette.accent||wxLayouts[b.layout].palette.accent;state.headingStyle='theme';state.tableStyle='layout';state.fontChoice='theme';return true}
+function applyStyle(name){const b=wxImageStyleBindings[name];if(!b||!b.layout)return false;state.imageStyle=name;state.coverStyle=b.cover;state.theme=b.layout;state.layoutPalette={...b.palette};state.layoutPaletteFor=b.layout;state.accent=b.palette.accent||wxLayouts[b.layout].palette.accent;state.headingStyle='theme';state.tableStyle='layout';state.fontChoice='theme';if(STYLE_BY_NAME[name]?.userPhotos&&state.photoAccent)state.accent=state.photoAccent;return true}
 function layoutLabel(name){const b=wxImageStyleBindings[name];if(!b||!b.layout)return '';const v=b.palette&&b.palette.variant&&wxLayoutVariants[b.palette.variant];return v?v.name:wxLayouts[b.layout].name}
 const portraitStyleSelected=()=>Boolean(styleOf(state.imageStyle)?.portrait);
 const cartoonStyleSelected=()=>styleOf(state.imageStyle)?.characterField==='cartoonCharacters';
@@ -103,14 +103,14 @@ $('newArticle').onclick=()=>switchArticle('/api/library/new');
 
 /* ---------- ② 选风格 ---------- */
 function renderStyleCards(){
- const box=$('styleCards');if(!box.children.length){for(const s of STYLES){const b=document.createElement('button');b.className='styleCard';b.dataset.imageStyleChoice=s.name;b.innerHTML=`<span class="styleThumbs"><img class="body" alt="" loading="lazy" src="${s.bodySampleUrl}"><img alt="" loading="lazy" src="${s.coverSampleUrl}"></span><strong>${esc(s.name)}</strong><small>排版：${esc(layoutLabel(s.name))}</small>`;b.onclick=()=>{applyStyle(s.name);paint();renderStyleCards();toast(`已选「${s.name}」：封面、排版「${layoutLabel(s.name)}」和配色一起换好了`)};box.append(b)}}
+ const box=$('styleCards');if(!box.children.length){for(const s of STYLES){const b=document.createElement('button');b.className='styleCard';b.dataset.imageStyleChoice=s.name;b.innerHTML=`<span class="styleThumbs"><img class="body" alt="" loading="lazy" src="${s.bodySampleUrl}"><img alt="" loading="lazy" src="${s.coverSampleUrl}"></span><strong>${esc(s.name)}</strong><small>排版：${esc(layoutLabel(s.name))}</small>`;b.onclick=()=>{const wasPhoto=Boolean(photoStyle());applyStyle(s.name);paint();renderStyleCards();if(wasPhoto!==Boolean(photoStyle()))renderVisualPlan();if(photoStyle())refreshPhotoAccent().then(paint);toast(`已选「${s.name}」：封面、排版「${layoutLabel(s.name)}」和配色一起换好了`)};box.append(b)}}
  box.querySelectorAll('[data-image-style-choice]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.imageStyleChoice===state.imageStyle?'true':'false'));
  const s=styleOf(state.imageStyle);const P=s?wxPalette(state):null;
- $('styleSummary').innerHTML=s?`<strong>${esc(s.name)}</strong><br>正文图：${esc(s.name)}风格，横向 ${esc(s.bodyRatio||'3:2')}<br>封面：900×383 横幅，${esc(s.bannerShort||'标题和画面一体')}<br>排版：${esc(layoutLabel(s.name))} · 配色<span class="swatches">${[P.accent,P.highlight,P.paper,P.ink].filter(Boolean).map(c=>`<i style="background:${c}"></i>`).join('')}</span>`:'还没选风格。选好后，正文图、横幅封面、排版和配色会一起定下来。';
+ $('styleSummary').innerHTML=s&&s.userPhotos?photoSummaryHtml(s,P):s?`<strong>${esc(s.name)}</strong><br>正文图：${esc(s.name)}风格，横向 ${esc(s.bodyRatio||'3:2')}<br>封面：900×383 横幅，${esc(s.bannerShort||'标题和画面一体')}<br>排版：${esc(layoutLabel(s.name))} · 配色<span class="swatches">${[P.accent,P.highlight,P.paper,P.ink].filter(Boolean).map(c=>`<i style="background:${c}"></i>`).join('')}</span>`:'还没选风格。选好后，正文图、横幅封面、排版和配色会一起定下来。';
  renderStyleOptions();
 }
 function renderStyleOptions(){
- const box=$('styleOptions');box.innerHTML='';
+ const box=$('styleOptions');box.innerHTML='';photoUiToggle();if(photoStyle()){photoStyleOptions(box);return}
  if(portraitStyleSelected()){const ref=state.portraitReference;const d=document.createElement('div');d.className='option';d.innerHTML=`<strong>图里的人</strong><br><label><input type="radio" name="who" value="owner"> 我本人（用作者形象档案）</label><br><label><input type="radio" name="who" value="other"> 别人：上传照片</label><div id="otherPerson" hidden><input id="portraitPersonLabel" placeholder="人物说明，例如：文章中的某某"><div class="portraitPreview"><img id="portraitReferenceImage" alt="" ${ref?.dataUrl?'':'hidden'}><button class="btn" id="choosePortraitPhoto" type="button">${ref?.dataUrl?'更换照片':'选择照片'}</button><span class="muted" id="portraitReferenceName">${esc(ref?.name||'')}</span></div><input type="file" id="portraitFileInput" accept="image/png,image/jpeg,image/webp" hidden></div>`;box.append(d);
   const owner=ownerIsPortraitSubject();d.querySelector(`[value=${owner?'owner':'other'}]`).checked=true;$('otherPerson').hidden=owner;if(ref?.dataUrl)$('portraitReferenceImage').src=ref.dataUrl;$('portraitPersonLabel').value=owner?'':(state.portraitPersonLabel||'');
   d.querySelectorAll('[name=who]').forEach(r=>r.onchange=()=>{const o=r.value==='owner'&&r.checked;if(r.checked){state.portraitPersonLabel=o?'作者本人':($('portraitPersonLabel').value||'');$('otherPerson').hidden=o;persist()}});
@@ -131,6 +131,7 @@ function castRequest(){return cartoonStyleSelected()?`角色：${(state.cartoonC
 function bodyGenerationRequest(){const s=styleOf(state.imageStyle);return `请使用公众号工作台（项目：${PROJECT}，规则见 skills/wechat-workbench/SKILL.md 与 skills/workbench-cover/SKILL.md），读取工作台当前正文与已确认 visualPlan。整组采用「${s.name}」风格（data/style-library/${s.dir}/style-config.json，观察同目录样图），正文图规则：${s.bodyPrompt} ${castRequest()}${personRequest()}画面补充要求：${state.imageIdea||'按各图描述'}。先生成正文候选图，再生成同一画风的公众号横幅封面（900×383），封面规则：${s.coverPrompt} 封面文字直接使用当前文章标题「${state.title}」。不重写正文，不先插入文章。正文图逐张用 python3 scripts/sync-workbench.py candidate 图片路径 --slot-id 对应方案id --alt 描述 同步，封面用 python3 scripts/sync-workbench.py cover 封面路径 同步；保留用户已采用的图。完成后工作台会自动显示，聊天里简短报告即可。`}
 $('confirmVisualSlots').onclick=async()=>{
  if(!styleOf(state.imageStyle)){toast('请先选一个风格');return}
+ if(photoStyle()){photoConfirm();return}
  if(portraitStyleSelected()&&!ownerIsPortraitSubject()&&!state.portraitReference?.dataUrl){toast('请先上传这个人的照片');$('portraitFileInput')?.click();return}
  if((state.visualPlan||[]).some(x=>x.needsContextAnalysis)){await copyText(`请使用公众号工作台（项目：${PROJECT}），读取当前全文，重点分析 visualPlan 中 needsContextAnalysis=true 的新增位置及前后文，写好具体 scene 和 reason 后清除标记，设 stage=plan 并更新 syncRevision。不生成图片、不改正文。`,'新加的配图位置要先分析上下文：分析指令已复制，发给助手后再点一次');return}
  if(await copyText(bodyGenerationRequest(),'生图指令已复制，粘贴给助手发送；做好的图会出现在“③ 成品”')){state.visualPlanConfirmed=true;persist();setStage('layout')}
@@ -159,6 +160,7 @@ function renderVisualPlan(){
  state.visualPlan.sort((a,b)=>a.anchorIndex-b.anchorIndex);
  for(let index=state.visualPlan.length-1;index>=0;index--){
   const item=state.visualPlan[index],card=document.createElement('div');card.className='visualPlaceholder';card.id='visual-slot-'+item.id;
+  if(photoStyle()){photoSlotCard(item,index,card);const anchor=blocks[item.anchorIndex];if(anchor)anchor.after(card);else preview.querySelector('h1').after(card);continue}
   card.innerHTML=`<div class="slotHeader"><strong>${visualNumber(index)}</strong><button class="linkbtn">删除</button></div><label class="inlinePlanLabel">画面描述<textarea>${esc(item.scene||'')}</textarea></label><label class="inlinePlanLabel">为什么配这张 / 我的想法<textarea>${esc(item.reason||'')}</textarea></label>`;
   const f=card.querySelectorAll('textarea');f[0].oninput=e=>{item.scene=e.target.value;persist()};f[1].oninput=e=>{item.reason=e.target.value;persist()};
   card.querySelector('button').onclick=()=>{state.visualPlan=state.visualPlan.filter(x=>x.id!==item.id);persist();renderVisualPlan()};
@@ -183,6 +185,7 @@ function adoptBodyCandidate(candidate,slot){
  if(previous)previous.accepted=false;candidate.accepted=true;candidate.insertedToken=token;paint();toast('已保留，并放进文章原定位置');
 }
 function renderImageGallery(){
+ if(photoStyle())return photoGallery();
  const gallery=$('bodyVisualGallery');gallery.innerHTML='';const candidates=state.bodyImageCandidates||[];
  (state.visualPlan||[]).forEach((slot,index)=>{
   const options=candidates.filter(x=>x.slotId===slot.id);const candidate=options.at(-1);if(!candidate&&!state.visualPlanConfirmed)return;
@@ -203,6 +206,7 @@ function updateCover(){
  const ready=Boolean(state.coverReady);const img=$('coverWideImage');img.hidden=!ready;$('coverEmpty').hidden=ready;if(ready)img.src=`/api/covers/wide?v=${state.coverRevision||0}`;else img.removeAttribute('src');
  $('coverEmpty').textContent=state.coverGenerationPending?'正在做封面…':'还没有封面。确认风格后，助手会按这套风格做一张 900×383 横幅封面。';
  $('downloadWide').disabled=!ready;const s=styleOf(state.imageStyle);$('coverStyleName').textContent=s?s.name+' · 900×383':'';
+ photoCoverUi();
 }
 $('downloadWide').onclick=()=>{const a=document.createElement('a');a.href=`/api/covers/wide?v=${state.coverRevision||0}`;a.download=`公众号封面-${(state.title||'文章').slice(0,20)}.png`;a.click()};
 $('coverFeedback').oninput=e=>{state.coverFeedback=e.target.value;persist()};
@@ -211,7 +215,7 @@ $('coverModify').onclick=()=>{const s=styleOf(state.imageStyle);if(!s){toast('�
 /* 编辑正文 */
 $('editArticle').onclick=()=>{$('title').value=state.title||'';$('markdown').value=readableEditorMarkdown(state.markdown||'');$('editorDialog').showModal()};
 $('closeEditor').onclick=()=>$('editorDialog').close();
-$('title').oninput=e=>{state.title=e.target.value;paint()};
+$('title').oninput=e=>{state.title=e.target.value;paint();photoTitleChanged()};
 $('markdown').oninput=e=>{state.markdown=restoreEditorMarkdown(e.target.value);paint()};
 $('tableButton').onclick=()=>{const box=$('markdown');const pos=box.selectionStart;const table='\n\n| 项目 | 内容 |\n| --- | --- |\n| 示例一 | 在这里填写 |\n| 示例二 | 在这里填写 |\n\n';state.markdown=restoreEditorMarkdown(box.value.slice(0,pos)+table+box.value.slice(pos));box.value=readableEditorMarkdown(state.markdown);box.focus();paint()};
 $('imageButton').onclick=()=>$('imageInput').click();
@@ -223,7 +227,7 @@ $('layoutKicker').oninput=e=>{state.layoutKicker=e.target.value.trim()||undefine
 $('resetTune').onclick=()=>{if(state.imageStyle)applyStyle(state.imageStyle);Object.assign(state,{font:15,line:1.85,gap:22,radius:8});delete state.layoutKicker;syncControls();paint();toast('已恢复这套风格的默认')};
 
 /* 管理风格 */
-$('manageStyles').onclick=()=>{const rows=$('styleEditRows');rows.innerHTML='';for(const s of STYLES){const d=document.createElement('div');d.className='styleEditRow';d.innerHTML=`<strong>${esc(s.name)}</strong> <span class="muted">排版：${esc(layoutLabel(s.name))}</span><label class="muted" style="display:block;margin-top:8px">正文图 Prompt<textarea data-k="bodyPrompt"></textarea></label><label class="muted" style="display:block">封面 Prompt（含横幅标题规则）<textarea data-k="coverPrompt"></textarea></label><button class="btn">保存这套</button>`;const [b,c]=d.querySelectorAll('textarea');b.value=s.bodyPrompt;c.value=s.coverPrompt;d.querySelector('button').onclick=async()=>{try{const r=await fetch('/api/styles/'+encodeURIComponent(s.dir),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({bodyPrompt:b.value,coverPrompt:c.value})});if(!r.ok)throw Error((await r.json()).error);s.bodyPrompt=b.value.trim();s.coverPrompt=c.value.trim();toast(`「${s.name}」已保存，下次生成生效`)}catch(err){toast(err.message||'保存失败')}};rows.append(d)}$('styleDialog').showModal()};
+$('manageStyles').onclick=()=>{const rows=$('styleEditRows');rows.innerHTML='';for(const s of STYLES){const d=document.createElement('div');d.className='styleEditRow';if(s.userPhotos){d.innerHTML=`<strong>${esc(s.name)}</strong> <span class="muted">排版：${esc(layoutLabel(s.name))}</span><p class="muted">这套用你自己的图片，不生图，没有 Prompt。</p>`;rows.append(d);continue}d.innerHTML=`<strong>${esc(s.name)}</strong> <span class="muted">排版：${esc(layoutLabel(s.name))}</span><label class="muted" style="display:block;margin-top:8px">正文图 Prompt<textarea data-k="bodyPrompt"></textarea></label><label class="muted" style="display:block">封面 Prompt（含横幅标题规则）<textarea data-k="coverPrompt"></textarea></label><button class="btn">保存这套</button>`;const [b,c]=d.querySelectorAll('textarea');b.value=s.bodyPrompt;c.value=s.coverPrompt;d.querySelector('button').onclick=async()=>{try{const r=await fetch('/api/styles/'+encodeURIComponent(s.dir),{method:'PUT',headers:{'content-type':'application/json'},body:JSON.stringify({bodyPrompt:b.value,coverPrompt:c.value})});if(!r.ok)throw Error((await r.json()).error);s.bodyPrompt=b.value.trim();s.coverPrompt=c.value.trim();toast(`「${s.name}」已保存，下次生成生效`)}catch(err){toast(err.message||'保存失败')}};rows.append(d)}$('styleDialog').showModal()};
 $('closeStyles').onclick=()=>$('styleDialog').close();
 
 /* ---------- 助手同步后自动刷新 ---------- */

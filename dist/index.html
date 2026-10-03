@@ -52,6 +52,8 @@ body[data-stage="writing"] #stageWriting,body[data-stage="plan"] #stagePlan,body
 .option{display:block;margin:10px 0;padding:10px 12px;border:1px solid #e2e9e3;border-radius:10px;font-size:13px;line-height:1.6}
 .option input[type=text],.option input:not([type]){width:100%;margin-top:6px;border:1px solid #dce5dc;border-radius:8px;padding:8px}
 .option .portraitPreview{display:flex;gap:8px;align-items:center;margin-top:6px}.option .portraitPreview img{width:44px;height:44px;object-fit:cover;border-radius:8px}
+/* 用自己图片的风格（真实图片等）：拖放/点击上传框 */
+.photoDrop{display:grid;place-items:center;gap:6px;min-height:96px;margin-top:6px;border:1.5px dashed #9fb8ab;border-radius:10px;background:#fbfdfb;color:#5f6f66;font-size:12.5px;text-align:center;padding:10px;cursor:pointer}.photoDrop.over{border-color:#1b6b59;background:#eef7f2}.photoDrop img{max-width:100%;max-height:220px;border-radius:6px;display:block}.photoDrop.cover img{aspect-ratio:900/383;object-fit:cover;width:100%}
 #imageIdea{width:100%;min-height:64px;border:1px solid #dce5dc;border-radius:10px;padding:9px;resize:vertical;margin-top:4px}
 /* ③ 成品 */
 #layoutStage{grid-template-columns:minmax(0,1fr) 420px;gap:16px;align-items:start}
@@ -129,7 +131,7 @@ dialog::backdrop{background:#20332d55}
   <div class="panel coverBox"><div class="panelhead"><h2>横幅封面</h2><span class="muted" id="coverStyleName"></span></div><div class="pbody">
    <img id="coverWideImage" alt="横幅封面" hidden><div class="coverEmpty" id="coverEmpty">还没有封面。确认风格后，助手会按这套风格做一张 900×383 横幅封面。</div>
    <textarea id="coverFeedback" placeholder="想怎么改封面？（选填）"></textarea>
-   <div class="btnRow"><button class="btn" id="coverModify">复制修改封面的指令</button></div>
+   <div class="btnRow"><button class="btn" id="coverModify">复制修改封面的指令</button><button class="btn" id="coverPhotoPick" hidden>上传封面图片</button><input type="file" id="coverPhotoPickInput" accept="image/jpeg,image/png,image/webp,image/gif" hidden></div>
   </div></div>
   <div class="panel"><div class="panelhead"><h2>正文配图</h2><span class="muted">喜欢就保留，不满意可修改或重做</span></div><div class="pbody"><div class="gallery" id="bodyVisualGallery"></div></div></div>
   <details class="tune"><summary>微调</summary><div class="tuneBody">
@@ -153,5 +155,5 @@ dialog::backdrop{background:#20332d55}
 <footer class="credit" id="siteCredit">© 2026 史鸿洁 · <a href="https://creativecommons.org/licenses/by-nc/4.0/deed.zh-hans" target="_blank" rel="noopener">CC BY-NC 4.0</a></footer>
 <div id="copyStage" aria-hidden="true"></div><div id="copyFallback" aria-hidden="true"></div>
 <div class="toast" id="toast" role="status"></div>
-<script src="md.js"></script><script src="wx-layouts.js"></script><script src="app.js"></script>
+<script src="md.js"></script><script src="wx-layouts.js"></script><script src="photo.js"></script><script src="app.js"></script>
 </body></html>

@@ -4,7 +4,7 @@
 
 在本机运行的微信公众号排版工作台。三步出稿：**文章 → 选一套风格 → 手机预览并复制到公众号**。
 
-- 9 套风格，每套把正文配图画风、900×383 横幅封面、公众号排版主题和配色绑在一起（配置在 `data/style-library/<风格>/style-config.json`）。
+- 10 套风格，每套把正文配图画风、900×383 横幅封面、公众号排版主题和配色绑在一起（配置在 `data/style-library/<风格>/style-config.json`）。
 - 排版引擎（`dist/wx-layouts.js`）会把文章渲染成带内联样式的 HTML。“复制到公众号”把它作为富文本放进剪贴板，可以直接粘贴到公众号后台。
 - 写作与生图不在网页里调用任何付费 API。网页按钮只复制指令，交给本机 Codex 对话（`skills/` 下的三个 Skill）完成，再由 `scripts/sync-workbench.py` 同步回工作台。
 
@@ -21,8 +21,11 @@
 | 荧光科技人像 | 荧光大字 | `neon-portrait` |
 | 波普拼贴人像 | 波普拼贴 | `pop-portrait` |
 | 粗线手绘图解 | 粗线手绘 | `rough-sketch-diagram` |
+| 真实图片 | 图片优先 | `real-photo` |
 
 粗线手绘图解：奶油底、粗黑手绘线、粉彩圆角卡（天蓝/薄荷/淡紫/蜜桃/奶黄），正文图 16:9；每张图右下角带手写「@怂怂的AI脑内小剧场」。
+
+真实图片：不生图，用你自己的照片和截图。在 ② 里把图片拖进每个配图位置、再放一张封面图片；排版是纯白、通栏照片、细线、编号小标题，图片下面不加任何说明；主色从照片里自动取（没有照片时 #3A5A78）；横幅封面在浏览器里用 canvas 生成（照片铺满 900×383，柔和渐变压暗，标题分层叠在照片上），和其它封面一样“下载封面”。图片跟正文图一样存在 `data/` 里，不进 git。
 
 ## 启动
 
@@ -50,8 +53,8 @@ python3 scripts/sync-workbench.py cover 封面.png                       # 2.35:
 | 路径 | 内容 |
 |---|---|
 | `server.js` | 本机服务：`/api/document`、`/api/covers`、`/api/styles`、`/api/library` |
-| `dist/` | 页面（`index.html`、`app.js`）、Markdown 渲染 `md.js`、排版引擎 `wx-layouts.js` |
-| `data/style-library/` | 9 套风格的 Prompt 与样图（作者照片目录 `_owner/` 不入库） |
+| `dist/` | 页面（`index.html`、`app.js`、自带图片风格 `photo.js`）、Markdown 渲染 `md.js`、排版引擎 `wx-layouts.js` |
+| `data/style-library/` | 10 套风格的 Prompt 与样图（作者照片目录 `_owner/` 不入库） |
 | `skills/` | Codex Skill：写作、配图与同步、封面 |
 | `scripts/` | 同步脚本、人像参考导出 |
 

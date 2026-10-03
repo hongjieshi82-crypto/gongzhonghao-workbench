@@ -34,6 +34,7 @@ var wxLayouts={
  wxCards:{name:'霓虹卡片',hint:'浅蓝底 · 圆角玩具卡 · 关卡编号',kicker:'个人Agent宇宙',palette:{accent:'#1677D2',highlight:'#F2B705',ink:'#1B2A40',muted:'#6F819A',line:'#D6E6F7',paper:'#EAF3FD',soft:'#E1EEFC',card:'#FFFFFF',glow:'#C6E1FB',pink:'#FF6FA8',mint:'#2EC4A6',chipText:'#1268B8'}},
  wxBigType:{name:'荧光大字',hint:'纯白 · 超大黑字 · 空心巨号 · 荧光绿',kicker:'个人智能体',palette:{accent:'#5E9E00',highlight:'#9BE22A',ink:'#111311',muted:'#8F968C',line:'#E6EAE0',paper:'#FFFFFF',soft:'#F0F8E2'}},
  wxDataReport:{name:'金属报告',hint:'石墨灰底 · 等宽标签 · 进度条编号 · 仪表卡',kicker:'竞品分析',palette:{accent:'#1F2620',highlight:'#8CC21A',highlightText:'#4F7A00',ink:'#30362F',muted:'#7F8A7A',line:'#D6DCD0',paper:'#EFF2EC',soft:'#E4E9DE',card:'#FFFFFF'}},
+ wxPhoto:{name:'图片优先',hint:'纯白 · 通栏照片 · 细线 · 编号小标题',kicker:'',palette:{accent:'#3A5A78',highlight:'#3A5A78',ink:'#222222',muted:'#8A8A8A',line:'#E6E6E6',paper:'#FFFFFF',soft:'#F4F5F6',card:'#FFFFFF'}},
  wxJournal:{name:'暖色手账',hint:'桃色纸 · 胶带便签 · 楷体批注 · 波浪线',kicker:'手记',palette:{accent:'#E07B4F',highlight:'#FCD9BC',ink:'#4A4038',muted:'#9C8B78',line:'#EADCCB',paper:'#FFF7EE',soft:'#FFF0E2',note:'#FFEFDF',note2:'#DCF1E7',mint:'#6DBE9C',tape:'#F6C6A2',card:'#FFFFFF'}}
 };
 var wxLayoutOrder=['wxMagazine','wxHeadline','wxCards','wxBigType','wxDataReport','wxJournal'];
@@ -51,6 +52,7 @@ var wxImageStyleBindings={
  '荧光科技人像':{cover:'neonPortrait',layout:'wxBigType',palette:{accent:'#5E9E00',highlight:'#9BE22A',ink:'#111311'}},
  '波普拼贴人像':{cover:'popPortrait',layout:'wxJournal',palette:{variant:'pop',accent:'#2F5BD3',highlight:'#FFE27A',ink:'#222222',muted:'#7C7A70',paper:'#FFFCF4',soft:'#FFF4C9',note:'#FFF2B8',note2:'#E2EAFF',line:'#E4E0CF',mint:'#FF7A9C',tape:'#9DB4F2',card:'#FFFFFF',grid:'#E8ECF8'}}
  ,'粗线手绘图解':{cover:'roughSketchDiagram',layout:'wxCards',palette:{variant:'sketch',accent:'#2F7FC1',highlight:'#FEE69C',ink:'#1A1A1A',muted:'#6B6458',paper:'#FFFAEE',soft:'#FFF3CC',card:'#FFFFFF',line:'#E8DDC6',chipText:'#1A1A1A',sky:'#BDE7FF',mint:'#CDFCE8',lav:'#E9CEFB',peach:'#FFD6B8',butter:'#FEE69C'}}
+ ,'真实图片':{cover:'realPhoto',layout:'wxPhoto',palette:{accent:'#3A5A78',ink:'#222222',paper:'#FFFFFF'}}
  ,'自动匹配文章':{cover:'auto',layout:null,palette:null} /* automatic: cover follows, layout stays as is */
 };
 
@@ -173,6 +175,11 @@ function wxEm(theme,P){
   hl:{backgroundColor:P.highlight,padding:'1px 3px'},
   circle:{display:'inline-block',lineHeight:'1.45',whiteSpace:'nowrap',textIndent:'0',border:'2.5px solid '+P.accent,borderRadius:'50%',padding:'1px 7px',margin:'0 1px'},
   wave:{textDecoration:'underline wavy '+(P.mint||P.accent),textUnderlineOffset:'5px'}};
+ if(theme==='wxPhoto')return{
+  strong:{color:P.accent,fontWeight:'700'},
+  hl:{backgroundImage:wxHL(wxMix(P.accent,'#ffffff',0.84),58),padding:'0 1px'},
+  circle:{display:'inline-block',lineHeight:'1.45',whiteSpace:'nowrap',textIndent:'0',border:'1px solid '+P.accent,borderRadius:'50%',padding:'0 6px',margin:'0 1px'},
+  wave:{textDecoration:'underline wavy '+P.accent,textUnderlineOffset:'4px'}};
  return{ /* wxJournal warm */
   strong:{color:P.ink,fontWeight:'800',backgroundImage:wxHL(P.highlight,48),padding:'0 2px'},
   hl:{backgroundImage:wxHL(wxMix(P.mint||P.highlight,'#ffffff',0.55),48),padding:'0 2px'},
@@ -376,6 +383,28 @@ function wxBuild(theme,P,cfg,blocks){
   hr:function(){return wxTag('p',wxS({margin:'30px 0',textAlign:'center',color:AC,letterSpacing:'8px',fontSize:'13px'}),PO?'✸ ✸ ✸':'～ ✿ ～')},
   ending:function(h){return para(h)+(PO?wxTag('p',wxS({margin:'40px 0 0',textAlign:'center'}),wxTag('span',wxS({display:'inline-block',backgroundColor:P.highlight,color:INKj,fontWeight:'900',fontSize:'14px',letterSpacing:'4px',padding:'4px 14px',transform:'rotate(-2deg)',boxShadow:'0 0 0 4px #ffffff, 0 3px 10px rgba(30,40,90,0.15)'}),'THE END ✸'))
      :wxTag('p',wxS({margin:'40px 0 0',textAlign:'center',fontFamily:WX_KAI,fontSize:'15px',letterSpacing:'4px',color:AC}),'— 完 —')+wxTag('p',wxS({margin:'6px 0 0',textAlign:'center',fontFamily:WX_KAI,fontSize:'13px',letterSpacing:'2px',color:P.muted}),'～ ✿ ～'))}
+ }}
+
+ /* ===== 7 图片优先 ← 真实图片：纯白、通栏照片无边框无说明、细线、编号小标题、左细线引用；主色取自照片 ===== */
+ if(theme==='wxPhoto'){var AP=P.accent,KP=P.ink,HL=P.line||'#E6E6E6',MU=P.muted||'#8A8A8A';
+  var rule=function(m){return wxTag('p',wxS({margin:m||'0',lineHeight:'0',fontSize:'0'}),wxBar('100%','1px',HL,{display:'block'}))};
+  L={
+  root:{padding:'12px 16px 28px',backgroundColor:P.paper},p:{textAlign:'left'},
+  masthead:function(){var k=(cfg.layoutKicker||'').trim();return k?wxTag('p',wxS({margin:'0 0 22px',fontSize:'12px',lineHeight:1.6,letterSpacing:'3px',color:MU}),k):''},
+  title:function(h){return wxTag('h1',wxS({margin:'0 0 26px',padding:'0',fontSize:'24px',lineHeight:1.45,fontWeight:'700',color:KP,letterSpacing:'0.5px'}),h,T)},
+  lede:function(h){return para(h,{fontSize:(fs+1)+'px',lineHeight:1.85,color:'#444444',margin:'0 0 '+(gap+6)+'px'})+rule('0 0 '+(gap+6)+'px')},
+  h2:function(h,i){return wxTag('h2',wxS({margin:'52px 0 20px',padding:'0',textAlign:'left',fontWeight:'700',color:KP}),
+    wxTag('span',wxS({display:'block',fontFamily:WX_NUM,fontSize:'13px',lineHeight:1.4,fontWeight:'600',letterSpacing:'2px',color:AP,margin:'0 0 8px'}),wxPad(i))+wxTag('span',wxS({display:'block',fontSize:'19px',lineHeight:1.5,fontWeight:'700',color:KP}),h)+wxTag('span',wxS({display:'block',margin:'14px 0 0',lineHeight:'0'}),wxBar('24px','1px',AP)))},
+  h3:function(h){return wxTag('h3',wxS({margin:'30px 0 12px',fontSize:'16px',fontWeight:'700',color:KP,lineHeight:1.55}),h)},
+  key:function(h){return sec(wxS({margin:'30px 0',padding:'16px 0',borderTop:'1px solid '+HL,borderBottom:'1px solid '+HL}),wxTag('p',wxS({margin:'0',fontSize:'17px',lineHeight:1.65,fontWeight:'700',color:KP,textAlign:'left'}),h))},
+  quote:function(h,c){return sec(wxS({margin:'28px 0',padding:'2px 0 2px 16px',borderLeft:'2px solid '+AP}),wxTag('p',wxS({margin:'0',fontSize:fs+'px',lineHeight:1.85,color:'#444444',textAlign:'left'}),h)+(c?wxTag('p',wxS({margin:'8px 0 0',fontSize:'12px',color:MU,textAlign:'left'}),'— '+c):''))},
+  callout:function(l,h){return sec(wxS({margin:'28px 0',padding:'14px 0 2px',borderTop:'1px solid '+HL}),wxTag('p',wxS({margin:'0 0 8px',fontSize:'12px',fontWeight:'600',letterSpacing:'2px',color:AP}),l)+para(h,{margin:'0 0 '+gap+'px',color:KP}))},
+  stats:function(items){var rows=[];for(var i=0;i<items.length;i+=2)rows.push(items.slice(i,i+2));return wxTag('table',wxS({width:'100%',margin:'8px 0 '+(gap+8)+'px',borderCollapse:'collapse',borderTop:'1px solid '+HL}),'<tbody>'+rows.map(function(r){return '<tr>'+r.map(function(it){return wxTag('td',wxS({width:'50%',padding:'14px 8px 12px 0',borderBottom:'1px solid '+HL,verticalAlign:'top'}),wxTag('span',wxS({display:'block',fontFamily:WX_NUM,fontSize:'24px',fontWeight:'600',color:AP,lineHeight:1.2}),it.value)+wxTag('span',wxS({display:'block',marginTop:'4px',fontSize:'12px',lineHeight:1.5,color:MU}),it.label))}).join('')+(r.length<2?'<td style="width:50%"></td>':'')+'</tr>'}).join('')+'</tbody>')},
+  figure:function(src){return sec(wxS({margin:'30px 0'}),wxImg(src,'',{}))},
+  ol:function(items){return sec(wxS({margin:'4px 0 '+gap+'px'}),items.map(function(h,i){var f=wxFirstSentence(h);return para(wxTag('span',wxS({fontFamily:WX_NUM,fontSize:'13px',fontWeight:'600',color:AP,marginRight:'10px'}),wxPad(i+1))+(f[0]?wxTag('strong',wxS({color:KP,fontWeight:'700'}),f[0]):'')+f[1],{margin:'0',padding:'12px 0',borderBottom:'1px solid '+HL})}).join(''))},
+  table:{wrap:{margin:'14px 0 '+(gap+8)+'px',borderTop:'1px solid '+KP},th:{padding:'9px 6px 9px 0',color:KP,fontWeight:'700',textAlign:'left',borderBottom:'1px solid '+KP},td:{padding:'10px 6px 10px 0',borderBottom:'1px solid '+HL,color:KP,verticalAlign:'top'},first:{fontWeight:'700'}},
+  hr:function(){return rule('40px 0')},
+  ending:function(h){return para(h)+wxTag('p',wxS({margin:'40px 0 0',lineHeight:'0',fontSize:'0'}),wxBar('24px','1px',AP))}
  }}
 
  /* ---------- assemble ---------- */

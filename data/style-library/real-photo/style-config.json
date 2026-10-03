@@ -1,0 +1,31 @@
+{
+  "name": "真实图片",
+  "coverKey": "realPhoto",
+  "userPhotos": true,
+  "accentFrom": "photos",
+  "bodyPrompt": "",
+  "coverPrompt": "",
+  "bodyHint": "你自己的照片或截图（不生图，保持原图比例，图下不加任何说明）",
+  "coverHint": "铺满 900×383 横幅，标题分层叠在照片上",
+  "accentHint": "主色从你的照片里取（没有照片时用 #3A5A78）",
+  "planHint": "这套不生图：把照片或截图拖进左边每个虚线框（或点一下选择），再放一张封面图片。",
+  "bodySample": "body-sample-v1.png",
+  "coverSample": "cover-sample-v1.png",
+  "bodyRatio": "原图比例",
+  "layoutTheme": "wxPhoto",
+  "layoutPalette": {
+    "accent": "#3A5A78",
+    "ink": "#222222",
+    "paper": "#FFFFFF"
+  },
+  "coverBanner": {
+    "layoutName": "图片优先",
+    "short": "你的照片铺满整张横幅 · 柔和渐变压暗 · 标题分层大字叠在照片上（浏览器里生成，可下载 PNG）",
+    "font": "系统粗黑体（苹方/思源黑体），主标题 800 字重，引入小字 600",
+    "fill": "照片偏暗时白字、偏亮时近黑字（自动看标题区域的明暗）",
+    "stroke": "无描边；主标题下垫一层主色错位字，加柔和投影",
+    "container": "不用面板：只在标题一侧加取自照片颜色的柔和渐变压暗",
+    "light": "渐变的颜色和明暗跟着照片标题区域走",
+    "layering": "主色短线 + 引入小字 + 两层主标题，左下对齐，离边缘至少 32px"
+  }
+}

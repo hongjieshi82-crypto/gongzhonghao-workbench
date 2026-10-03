@@ -8,7 +8,7 @@ description: 为公众号工作台设计与正文配图一致的完整封面，�
 ## 读什么
 
 1. GET `http://127.0.0.1:4173/api/document`：当前标题、`imageStyle`、`coverStyle`、已采用的正文图、`coverFeedback`（她的修改意见）、`includeOwner`、`cartoonCharacters`、`portraitReference`。
-2. 所选风格的 `data/style-library/<目录>/style-config.json`：`coverPrompt` 与 `coverBanner`（字体、填色、描边、容器、光效），观察 `coverSample` 样图。9 套风格与目录对照见 `skills/wechat-workbench/SKILL.md`。
+2. 所选风格的 `data/style-library/<目录>/style-config.json`：`coverPrompt` 与 `coverBanner`（字体、填色、描边、容器、光效），观察 `coverSample` 样图。10 套风格与目录对照（「真实图片」的封面由网页用她的照片生成，不用生图）见 `skills/wechat-workbench/SKILL.md`。
 3. `references/banner-title.md`：横幅一体化标题规范和各风格的标题处理。
 4. 正文视觉延续：`skills/wechat-workbench/references/cover-art-direction.md`。先观察已采用的正文图，选一两张作为原生生图参考；封面不换媒介（摄影继续摄影，手绘继续手绘）。
 5. 需要画作者本人时读 `data/style-library/_owner/owner-profile.md` 与 refs（规则同 wechat-workbench）。
